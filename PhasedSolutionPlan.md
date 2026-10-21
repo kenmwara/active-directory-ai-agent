@@ -101,6 +101,7 @@ If a session goes wrong: start a new one with the start prompt, say what broke, 
 - [ ] 7.1 Checkpoint `pre-campaign`; stage the test data (locked accounts, planted instructions I-1 to I-5)
 - [ ] 7.2 Run D-1 to D-3, I-1 to I-5, B-1 and B-2, A-1 to A-4, S-1 and S-2; every outcome in FINDINGS.md
 - [ ] 7.3 Every miss by the detector gets a new rule, proven, then the test is re-run
+- [ ] 7.4 Record the campaign on video (Ken, 21 Oct): the agent's request, the tool calls, what stopped it (AD's denial, the confirmation prompt, the DC01 alert). Screen capture with OBS on the host; one take per test family, cut to a short edit
 
 ### Phase 8: Fix, v2 and comparison
 
@@ -112,7 +113,7 @@ If a session goes wrong: start a new one with the start prompt, say what broke, 
 
 - [ ] 9.1 README rewritten for the public, screenshots, the findings summary; scrub check (no passwords, no LAPS output, no tokens)
 - [ ] 9.2 Repo public (D14); added to the cyber-range README index and the portfolio
-- [ ] 9.3 The Range post first, then LinkedIn (hook image); send it to Raymond Gonsalves, tag Josh Madakor
+- [ ] 9.3 The Range post first, then LinkedIn (hook image + the campaign video in both); send it to Raymond Gonsalves, tag Josh Madakor
 
 ## Deadlines that matter
 
