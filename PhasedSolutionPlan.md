@@ -37,6 +37,9 @@ If a session goes wrong: start a new one with the start prompt, say what broke, 
 
 ### Phase 0: Lab prep (Ken at the laptop, no code)
 
+Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab\phase0-host.ps1` on the laptop (0.1, 0.2, copies the next two + `distdmcp-<sha>.zip` into the VMs), `C:\Lab\phase0-dc01.ps1` on DC01 as a-kkariuki (0.3, 0.4, proves 4728 + 5136), `C:\Lab\phase0-client01.ps1` on CLIENT01 as a-kkariuki (0.5, 0.6 admin part: RSAT, Python, Git, `C:\ADAgent` read-only to non-admins, venv, stdio check), then Claude Code as ai-operator in `C:\ADAgent\operator` (`/mcp`: admcp connected, 0 tools), then `phase0-host.ps1 -Final` (0.7).
+
+
 - [ ] 0.1 Checkpoint DC01 and CLIENT01: `pre-agent`
 - [ ] 0.2 Host: `Enable-VMIntegrationService -VMName CLIENT01 -Name "Guest Service Interface"` (for `Copy-VMFile`, D15)
 - [ ] 0.3 DC01: GPO "Audit - Directory and Account Changes" on Domain Controllers. Advanced Audit Policy: DS Access →
@@ -127,3 +130,4 @@ If a session goes wrong: start a new one with the start prompt, say what broke, 
 | Date | Session |
 |---|---|
 | 21 Oct 2026 | Phase 1: SolutionDesign v0.1 → v1.0 (D1–D15). Phase 2: repo, CLAUDE.md, this plan, FINDINGS.md, empty server + stdio check (0 tools, mutation-tested). Next: Phase 0 at the laptop, then Phase 3 |
+| 22 Oct 2026 | Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |

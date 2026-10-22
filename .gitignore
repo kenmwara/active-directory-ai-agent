@@ -4,3 +4,4 @@ __pycache__/
 # call logs and raw evidence stay local until scrubbed
 logs/
 *.jsonl
+dist/
