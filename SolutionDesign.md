@@ -238,7 +238,7 @@ Each detection is proven by a staged event before the campaign, and every findin
 
 1. Checkpoint DC01 and CLIENT01 (`pre-agent`).
 2. DC01: an audit GPO on Domain Controllers (Advanced Audit Policy: Directory Service Changes, Security Group
-   Management, User Account Management: Success and Failure); check that a test change produces 5136, add SACLs if not.
+   Management, User Account Management: Success and Failure); check that a test change produces 5136, add SACLs if not. Measured 22 Oct: the domain root's default SACL (Everyone, write property, success) already makes 5136 fire, but it is written about 9 s after the change (4728 sooner), so anything reading 5136 right after a change, the detector included, must wait or poll.
 3. Create `AI-Operators` and `ai-operator`; delegate the rights in section 5 with the Delegation of Control wizard
    (scripted afterwards in `setup-lab.ps1`).
 4. CLIENT01: RSAT (Active Directory, Group Policy Management), Python 3.12, Claude Code; allow `ai-operator` to sign in.

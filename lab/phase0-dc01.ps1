@@ -81,16 +81,24 @@ function Toggle-Membership {
         Remove-ADGroupMember 'AI-Operators' -Members 'ai-operator' -Confirm:$false
     }
     Add-ADGroupMember 'AI-Operators' -Members 'ai-operator'
-    Start-Sleep -Seconds 5
 }
 function Find-Events($id, $since) {
     @(Get-WinEvent -FilterHashtable @{ LogName = 'Security'; Id = $id; StartTime = $since } -ErrorAction SilentlyContinue |
         Where-Object { $_.Message -match 'AI-Operators' })
 }
-$mark = Get-Date; Toggle-Membership
-$e4728 = Find-Events 4728 $mark; $e5136 = Find-Events 5136 $mark
+# 5136 is written about 9 s after the change (DC01 22 Oct: 0 at 5 s, both at +8.7 s), so poll for up to a minute
+function Prove {
+    $mark = Get-Date; Toggle-Membership
+    foreach ($i in 1..30) {
+        $script:e4728 = Find-Events 4728 $mark; $script:e5136 = Find-Events 5136 $mark
+        if ($script:e4728.Count -gt 0 -and $script:e5136.Count -gt 0) { break }
+        Start-Sleep -Seconds 2
+    }
+    "  after $([math]::Round(((Get-Date) - $mark).TotalSeconds)) s: 4728 x$($script:e4728.Count), 5136 x$($script:e5136.Count)"
+}
+Prove
 if ($e5136.Count -eq 0) {
-    Say 'No 5136 yet: adding audit SACLs (Everyone, write property, success + failure) on Groups and _USERS'
+    Say 'No 5136 within a minute: adding audit SACLs (Everyone, write property, success + failure) on Groups and _USERS'
     foreach ($ou in $groupsDN, "OU=_USERS,$dn") {
         $acl  = Get-Acl "AD:$ou" -Audit
         $sid  = [Security.Principal.SecurityIdentifier]'S-1-1-0'
@@ -101,16 +109,7 @@ if ($e5136.Count -eq 0) {
         $acl.AddAuditRule($rule)
         Set-Acl "AD:$ou" $acl
     }
-    # inherited audit rules reach child objects through AD's background SD propagation; toggling before the group
-    # has the rule logs no 5136 (seen on DC01 22 Oct), so wait for it (up to 2 min)
-    $grp = "AD:" + (Get-ADGroup 'AI-Operators').DistinguishedName
-    foreach ($i in 1..24) {
-        if ((Get-Acl $grp -Audit).Audit | Where-Object { $_.IsInherited -and $_.IdentityReference -match 'Everyone|S-1-1-0' }) { break }
-        Start-Sleep -Seconds 5
-    }
-    "  AI-Operators has the inherited audit rule after about $(($i - 1) * 5) s"
-    $mark = Get-Date; Toggle-Membership
-    $e4728 = Find-Events 4728 $mark; $e5136 = Find-Events 5136 $mark
+    Prove
 }
 
 # ---- Summary ---------------------------------------------------------------------------------------------------------
