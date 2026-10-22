@@ -101,6 +101,14 @@ if ($e5136.Count -eq 0) {
         $acl.AddAuditRule($rule)
         Set-Acl "AD:$ou" $acl
     }
+    # inherited audit rules reach child objects through AD's background SD propagation; toggling before the group
+    # has the rule logs no 5136 (seen on DC01 22 Oct), so wait for it (up to 2 min)
+    $grp = "AD:" + (Get-ADGroup 'AI-Operators').DistinguishedName
+    foreach ($i in 1..24) {
+        if ((Get-Acl $grp -Audit).Audit | Where-Object { $_.IsInherited -and $_.IdentityReference -match 'Everyone|S-1-1-0' }) { break }
+        Start-Sleep -Seconds 5
+    }
+    "  AI-Operators has the inherited audit rule after about $(($i - 1) * 5) s"
     $mark = Get-Date; Toggle-Membership
     $e4728 = Find-Events 4728 $mark; $e5136 = Find-Events 5136 $mark
 }
