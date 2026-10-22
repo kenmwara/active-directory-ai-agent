@@ -94,7 +94,10 @@ if ($e5136.Count -eq 0) {
     foreach ($ou in $groupsDN, "OU=_USERS,$dn") {
         $acl  = Get-Acl "AD:$ou" -Audit
         $sid  = [Security.Principal.SecurityIdentifier]'S-1-1-0'
-        $rule = New-Object DirectoryServices.ActiveDirectoryAuditRule $sid, 'WriteProperty', 'Success, Failure', 'All'
+        # typed args: with plain strings two 4-arg constructors match and New-Object throws "ambiguous overloads"
+        $rule = New-Object DirectoryServices.ActiveDirectoryAuditRule $sid,
+            ([DirectoryServices.ActiveDirectoryRights]'WriteProperty'), ([Security.AccessControl.AuditFlags]'Success, Failure'),
+            ([DirectoryServices.ActiveDirectorySecurityInheritance]'All')
         $acl.AddAuditRule($rule)
         Set-Acl "AD:$ou" $acl
     }
