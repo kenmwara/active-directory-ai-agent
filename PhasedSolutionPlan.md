@@ -40,8 +40,8 @@ If a session goes wrong: start a new one with the start prompt, say what broke, 
 Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab\phase0-host.ps1` on the laptop (0.1, 0.2, copies the next two + `dist\admcp-<sha>.zip` into the VMs), `C:\Lab\phase0-dc01.ps1` on DC01 as a-kkariuki (0.3, 0.4, proves 4728 + 5136), `C:\Lab\phase0-client01.ps1` on CLIENT01 as a-kkariuki (0.5, 0.6 admin part: RSAT, Python, Git, `C:\ADAgent` read-only to non-admins, venv, stdio check), then Claude Code as ai-operator in `C:\ADAgent\operator` (`/mcp`: admcp connected, 0 tools), then `phase0-host.ps1 -Final` (0.7).
 
 
-- [ ] 0.1 Checkpoint DC01 and CLIENT01: `pre-agent`
-- [ ] 0.2 Host: `Enable-VMIntegrationService -VMName CLIENT01 -Name "Guest Service Interface"` (for `Copy-VMFile`, D15)
+- [x] 0.1 Checkpoint DC01 and CLIENT01: `pre-agent` (22 Oct)
+- [x] 0.2 (22 Oct; scripts + `admcp-040f537.zip` copied to `C:\Lab`) Host: `Enable-VMIntegrationService -VMName CLIENT01 -Name "Guest Service Interface"` (for `Copy-VMFile`, D15)
 - [ ] 0.3 DC01: GPO "Audit - Directory and Account Changes" on Domain Controllers. Advanced Audit Policy: DS Access →
       Directory Service Changes; Account Management → Security Group Management, User Account Management; Success +
       Failure. Prove it: a test group change shows 4728 and 5136 (add SACLs on `_USERS` / `Groups` if 5136 is missing)
