@@ -48,8 +48,8 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
       Failure. Prove it: a test group change shows 4728 and 5136 (add SACLs on `_USERS` / `Groups` if 5136 is missing)
 - [x] 0.4 (22 Oct) New OU `_AGENTS`; group `AI-Operators` (in `Groups`); user `ai-operator` (in `_AGENTS`, member of
       `AI-Operators` only). Kept out of `_USERS` so the agent's own rights never cover its own account
-- [ ] 0.5 CLIENT01: RSAT Active Directory + Group Policy Management (`Add-WindowsCapability`), Python 3.12+, Claude Code
-- [ ] 0.6 Copy the repo to CLIENT01, make the venv, `tests\check_server.py` prints ok; Claude Code started in
+- [ ] 0.5 (22 Oct: RSAT AD + GPMC installed, Python 3.12.10, Git 2.55.0.5; Claude Code as ai-operator next) CLIENT01: RSAT Active Directory + Group Policy Management (`Add-WindowsCapability`), Python 3.12+, Claude Code
+- [ ] 0.6 (22 Oct: `admcp-11ba90a.zip` → `C:\ADAgent`, venv, check_server ok: 0 tools; the ai-operator `/mcp` check next) Copy the repo to CLIENT01, make the venv, `tests\check_server.py` prints ok; Claude Code started in
       `operator\` as `ai-operator` lists 0 `admcp` tools
 - [ ] 0.7 Checkpoint `pre-build`
 
@@ -131,4 +131,4 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 | Date | Session |
 |---|---|
 | 21 Oct 2026 | Phase 1: SolutionDesign v0.1 → v1.0 (D1–D15). Phase 2: repo, CLAUDE.md, this plan, FINDINGS.md, empty server + stdio check (0 tools, mutation-tested). Next: Phase 0 at the laptop, then Phase 3 |
-| 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
+| 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS; CLIENT01 admin part (RSAT, Python, Git, `C:\ADAgent`, stdio ok) done. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
