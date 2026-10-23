@@ -41,6 +41,23 @@ Push-Location $App
 try { & "$App\.venv\Scripts\python.exe" tests\check_server.py } finally { Pop-Location }
 "  repo: $($zip.Name) -> $App"
 
+Say '0.6 Claude Code managed settings (admin-only, so neither ai-operator nor the agent can change them)'
+# Found 22 Oct: signing ai-operator in to Claude brought along every claude.ai connector on the account (Gmail, Drive,
+# Calendar, Cloudflare, Cyber Range: 133 tools), and the .mcp.json approval could not be saved because C:\ADAgent is
+# read-only to ai-operator. Managed settings: connectors off, admcp approved, the login token unreadable by the agent.
+$managed = 'C:\Program Files\ClaudeCode'
+New-Item -ItemType Directory -Force -Path $managed | Out-Null
+$json = @'
+{
+  "disableClaudeAiConnectors": true,
+  "enabledMcpjsonServers": ["admcp"],
+  "permissions": { "deny": ["Read(~/.claude/**)"] }
+}
+'@
+[IO.File]::WriteAllText("$managed\managed-settings.json", $json)   # UTF-8 without BOM; a BOM breaks JSON parsing
+"  $managed\managed-settings.json written; ai-operator can read it: " +
+    [bool]((icacls $managed) -match 'BUILTIN\\Users:.*\(RX\)')
+
 Say 'Next: sign out, sign in as KENLAB\ai-operator, then in PowerShell:'
 '  irm https://claude.ai/install.ps1 | iex'
 '  cd C:\ADAgent\operator'
