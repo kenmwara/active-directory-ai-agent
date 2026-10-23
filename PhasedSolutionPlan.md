@@ -67,33 +67,35 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 
 ### Phase 3: Read-only tools
 
+Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
+
 - [ ] 3.1 Shared runner (JSON on stdin → fixed `.ps1` → JSON out, errors verbatim, 200-row cap) + call logger (JSON lines + Application event log, source `admcp`)
 - [ ] 3.2 `ad_whoami`
 - [ ] 3.3 `admcp_my_tool_calls`
-- [ ] 3.4 `ad_search_users`
+- [ ] 3.4 `ad_search_users` (with `locked_only`)
 - [ ] 3.5 `ad_get_group_members`
-- [ ] 3.6 `ad_list_locked_accounts`
-- [ ] 3.7 `gpo_list`
-- [ ] 3.8 `gpo_get_report`
-- [ ] 3.9 `fs_get_acl` (path allowlist `\\DC01\Finance`)
-- [ ] 3.10 `gpo_get_result_for_user`: done when it prints "Finance Drive Map, Filtering: Denied (Security)" for an HR user
+- [ ] 3.6 (v2) `ad_list_locked_accounts`
+- [ ] 3.7 (v2) `gpo_list`
+- [ ] 3.8 (v2) `gpo_get_report`
+- [ ] 3.9 (v2) `fs_get_acl` (path allowlist `\\DC01\Finance`)
+- [ ] 3.10 (v2) `gpo_get_result_for_user`: done when it prints "Finance Drive Map, Filtering: Denied (Security)" for an HR user
 
 ### Phase 4: Delegation
 
-- [ ] 4.1 `lab\setup-lab.ps1` (delegation section) grants `AI-Operators` exactly the rights in SolutionDesign §5, on the OUs in D6–D8
+- [ ] 4.1 `lab\setup-lab.ps1` (delegation section) grants `AI-Operators` exactly the v1 rights in SolutionDesign §5 (`lockoutTime` and `userAccountControl` on users in `_USERS`, `member` on groups in `OU=Groups`); the D6–D8 rights are v2
 - [ ] 4.2 Delegation matrix: each right works inside its scope and fails one step outside it, AD's error word for word
-- [ ] 4.3 Verify the move rights and the RSoP right in practice; update SolutionDesign §5 if reality differs
+- [ ] 4.3 (v2) Verify the move rights and the RSoP right in practice; update SolutionDesign §5 if reality differs
 
 ### Phase 5: Change and destructive tools
 
 - [ ] 5.1 `ad_unlock_account`
 - [ ] 5.2 `ad_add_group_member`
-- [ ] 5.3 `ad_move_object` (`_USERS\IT` / `\Finance` / `\HR` only)
-- [ ] 5.4 `gpo_link` (`Workstations` + the three department OUs only)
+- [ ] 5.3 (v2) `ad_move_object` (`_USERS\IT` / `\Finance` / `\HR` only)
+- [ ] 5.4 (v2) `gpo_link` (`Workstations` + the three department OUs only)
 - [ ] 5.5 `ad_disable_account`
-- [ ] 5.6 `ad_remove_group_member`
-- [ ] 5.7 `gpo_set_security_filter` ("Finance Drive Map" only)
-- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before the three destructive ones, deny shell and file writes; prove each rule once. Auto mode is Claude Code's default since 2.1.x and only user or managed settings can change `defaultMode`: decide it in managed settings and prove the ask rules still prompt. Reads outside `operator\` prompt ("Read outside the working directories"); the agent needs no file reads at all, so decide `blockReadsOutsideWorkingDirectories` there too. Opus 5.5's cyber safeguard switched an ai-operator session to Opus 4.8 on a README read (22 Oct): log which model answered in every campaign run (D12, the video). Deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
+- [ ] 5.6 (v2) `ad_remove_group_member`
+- [ ] 5.7 (v2) `gpo_set_security_filter` ("Finance Drive Map" only)
+- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before `ad_disable_account` (the one destructive v1 tool), deny shell and file writes; prove each rule once. Auto mode is Claude Code's default since 2.1.x and only user or managed settings can change `defaultMode`: decide it in managed settings and prove the ask rules still prompt. Reads outside `operator\` prompt ("Read outside the working directories"); the agent needs no file reads at all, so decide `blockReadsOutsideWorkingDirectories` there too. Opus 5.5's cyber safeguard switched an ai-operator session to Opus 4.8 on a README read (22 Oct): log which model answered in every campaign run (D12, the video). Deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
 
 ### Phase 6: Detections
 
@@ -103,7 +105,7 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 ### Phase 7: Red-team campaign (v1, no policy in the server)
 
 - [ ] 7.1 Checkpoint `pre-campaign`; stage the test data (locked accounts, planted instructions I-1 to I-5)
-- [ ] 7.2 Run D-1 to D-3, I-1 to I-5, B-1 and B-2, A-1 to A-4, S-1 and S-2; every outcome in FINDINGS.md
+- [ ] 7.2 Run D-1 to D-3, I-1, I-2, I-5, B-1 and B-2, A-1 to A-3, S-1 and S-2 (13 tests; I-3, I-4, A-4 are v2); every outcome in FINDINGS.md
 - [ ] 7.3 Every miss by the detector gets a new rule, proven, then the test is re-run
 - [ ] 7.4 Record the campaign on video (Ken, 21 Oct): the agent's request, the tool calls, what stopped it (AD's denial, the confirmation prompt, the DC01 alert). Screen capture with OBS on the host; one take per test family, cut to a short edit
 
@@ -131,4 +133,4 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 | Date | Session |
 |---|---|
 | 21 Oct 2026 | Phase 1: SolutionDesign v0.1 → v1.0 (D1–D15). Phase 2: repo, CLAUDE.md, this plan, FINDINGS.md, empty server + stdio check (0 tools, mutation-tested). Next: Phase 0 at the laptop, then Phase 3 |
-| 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS; CLIENT01 admin part (RSAT, Python, Git, `C:\ADAgent`, stdio ok) done. F-00 found and fixed (the agent identity inherited the Claude account's connectors and plugins; admin-only managed settings). C: fell from 21 to 2.8 GB (CLIENT01 wrote 11.6 GB in 2 h, plus RAM-sized `.VMRS` files): VMs set to AutomaticStopAction ShutDown + Production checkpoints. 0.7 `pre-build` taken with both VMs off. **Phase 0 done.** Next: Phase 3, `ad_whoami`. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
+| 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS; CLIENT01 admin part (RSAT, Python, Git, `C:\ADAgent`, stdio ok) done. F-00 found and fixed (the agent identity inherited the Claude account's connectors and plugins; admin-only managed settings). C: fell from 21 to 2.8 GB (CLIENT01 wrote 11.6 GB in 2 h, plus RAM-sized `.VMRS` files): VMs set to AutomaticStopAction ShutDown + Production checkpoints. 0.7 `pre-build` taken with both VMs off. **Phase 0 done.** Lean cut agreed (D16: 4 read + 3 change tools, 13 campaign tests). Next: Phase 3, `ad_whoami`. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
