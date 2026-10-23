@@ -35,7 +35,7 @@ If a session goes wrong: start a new one with the start prompt, say what broke, 
 
 ## Phases
 
-### Phase 0: Lab prep (Ken at the laptop, no code)
+### Phase 0: Lab prep (Ken at the laptop, no code) ✅ 22 Oct 2026
 
 Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab\phase0-host.ps1` on the laptop (0.1, 0.2, copies the next two + `dist\admcp-<sha>.zip` into the VMs), `C:\Lab\phase0-dc01.ps1` on DC01 as a-kkariuki (0.3, 0.4, proves 4728 + 5136), `C:\Lab\phase0-client01.ps1` on CLIENT01 as a-kkariuki (0.5, 0.6 admin part: RSAT, Python, Git, `C:\ADAgent` read-only to non-admins, venv, stdio check), then Claude Code as ai-operator in `C:\ADAgent\operator` (`/mcp`: admcp connected, 0 tools), then `phase0-host.ps1 -Final` (0.7).
 
@@ -51,7 +51,7 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 - [x] 0.5 (22 Oct: RSAT AD + GPMC installed, Python 3.12.10, Git 2.55.0.5, Claude Code 2.1.309 as ai-operator) CLIENT01: RSAT Active Directory + Group Policy Management (`Add-WindowsCapability`), Python 3.12+, Claude Code
 - [x] 0.6 (22 Oct: `admcp-11ba90a.zip` → `C:\ADAgent`, venv, check_server ok: 0 tools; `/mcp` as ai-operator: admcp connected, after F-00's managed settings) Copy the repo to CLIENT01, make the venv, `tests\check_server.py` prints ok; Claude Code started in
       `operator\` as `ai-operator` lists 0 `admcp` tools
-- [ ] 0.7 Checkpoint `pre-build`
+- [x] 0.7 (22 Oct 18:02, both VMs off: offline, no saved memory) Checkpoint `pre-build`
 
 ### Phase 1: Solution design ✅ 21 Oct 2026
 
@@ -131,4 +131,4 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 | Date | Session |
 |---|---|
 | 21 Oct 2026 | Phase 1: SolutionDesign v0.1 → v1.0 (D1–D15). Phase 2: repo, CLAUDE.md, this plan, FINDINGS.md, empty server + stdio check (0 tools, mutation-tested). Next: Phase 0 at the laptop, then Phase 3 |
-| 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS; CLIENT01 admin part (RSAT, Python, Git, `C:\ADAgent`, stdio ok) done. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
+| 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS; CLIENT01 admin part (RSAT, Python, Git, `C:\ADAgent`, stdio ok) done. F-00 found and fixed (the agent identity inherited the Claude account's connectors and plugins; admin-only managed settings). C: fell from 21 to 2.8 GB (CLIENT01 wrote 11.6 GB in 2 h, plus RAM-sized `.VMRS` files): VMs set to AutomaticStopAction ShutDown + Production checkpoints. 0.7 `pre-build` taken with both VMs off. **Phase 0 done.** Next: Phase 3, `ad_whoami`. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
