@@ -93,7 +93,7 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 - [ ] 5.5 `ad_disable_account`
 - [ ] 5.6 `ad_remove_group_member`
 - [ ] 5.7 `gpo_set_security_filter` ("Finance Drive Map" only)
-- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before the three destructive ones, deny shell and file writes; prove each rule once
+- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before the three destructive ones, deny shell and file writes; prove each rule once. Also deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
 
 ### Phase 6: Detections
 
