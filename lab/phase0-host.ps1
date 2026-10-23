@@ -14,11 +14,26 @@ $free = [math]::Round((Get-PSDrive C).Free / 1GB, 1)
 "C: free: $free GB"
 if ($free -lt 8) { throw "Only $free GB free on C:. Free some space before taking checkpoints." }
 
+# Disk (22 Oct: C: fell from 21 to 2.8 GB in 2 h): AutomaticStopAction Save keeps a file the size of the VM's RAM on
+# disk while it runs, and Standard checkpoints save RAM too. ShutDown + Production drop both; Hyper-V only takes these
+# while the VM is off.
+foreach ($vm in $vms) {
+    $v = Get-VM $vm
+    if ($v.State -eq 'Off' -and ($v.AutomaticStopAction -ne 'ShutDown' -or $v.CheckpointType -ne 'Production')) {
+        Set-VM -Name $vm -AutomaticStopAction ShutDown -CheckpointType Production
+    }
+    $v = Get-VM $vm
+    "$vm stop action: $($v.AutomaticStopAction), checkpoint type: $($v.CheckpointType), state: $($v.State)"
+}
+
 $name = if ($Final) { 'pre-build' } else { 'pre-agent' }
 foreach ($vm in $vms) {
     if (-not (Get-VMSnapshot -VMName $vm -Name $name -ErrorAction SilentlyContinue)) {
         Checkpoint-VM -Name $vm -SnapshotName $name
     }
+    # the new checkpoint can take a few seconds to show up (22 Oct: files on disk, missing from the list); prove it
+    foreach ($i in 1..15) { if (Get-VMSnapshot -VMName $vm -Name $name -ErrorAction SilentlyContinue) { break }; Start-Sleep 2 }
+    if (-not (Get-VMSnapshot -VMName $vm -Name $name -ErrorAction SilentlyContinue)) { throw "$vm has no '$name' checkpoint" }
     "$vm checkpoints: " + ((Get-VMSnapshot -VMName $vm).Name -join ', ')
 }
 if ($Final) { return }
