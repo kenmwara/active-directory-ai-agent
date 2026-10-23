@@ -93,7 +93,7 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 - [ ] 5.5 `ad_disable_account`
 - [ ] 5.6 `ad_remove_group_member`
 - [ ] 5.7 `gpo_set_security_filter` ("Finance Drive Map" only)
-- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before the three destructive ones, deny shell and file writes; prove each rule once. Auto mode is Claude Code's default since 2.1.x and only user or managed settings can change `defaultMode`: decide it in managed settings and prove the ask rules still prompt. Deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
+- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before the three destructive ones, deny shell and file writes; prove each rule once. Auto mode is Claude Code's default since 2.1.x and only user or managed settings can change `defaultMode`: decide it in managed settings and prove the ask rules still prompt. Reads outside `operator\` prompt ("Read outside the working directories"); the agent needs no file reads at all, so decide `blockReadsOutsideWorkingDirectories` there too. Opus 5.5's cyber safeguard switched an ai-operator session to Opus 4.8 on a README read (22 Oct): log which model answered in every campaign run (D12, the video). Deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
 
 ### Phase 6: Detections
 

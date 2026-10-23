@@ -37,7 +37,7 @@ Tags: OWASP LLM Top 10 (LLM01, LLM06), OWASP Agentic Top 10 (ASI01–ASI10), MIT
    (admin-only): `disableClaudeAiConnectors: true`, `enabledMcpjsonServers: ["admcp"]`, and a deny on reading
    `~/.claude/**` (the login token). Managed settings outrank user and project settings, and a project file cannot
    turn the connectors back on, so neither `ai-operator` nor a tricked agent can undo it. Re-test 22 Oct: `/mcp` lists
-   one server, `admcp`, connected (`07b-...`). The deny rule's own test (a canary file in `~/.claude`) is pending.
+   one server, `admcp`, connected (`07b-...`). Deny rule tested the same day: the agent was asked to read a canary file in `~/.claude` and was refused by the permission rule; reading `C:\ADAgent\README.md` still worked, so the rule is targeted, not a broken Read tool (`08-...`).
 
 Lesson for the write-up: an agent's permissions are the union of its directory rights **and** every tool its model
 account carries. Scope the account, not just the AD identity.
