@@ -48,8 +48,8 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
       Failure. Prove it: a test group change shows 4728 and 5136 (add SACLs on `_USERS` / `Groups` if 5136 is missing)
 - [x] 0.4 (22 Oct) New OU `_AGENTS`; group `AI-Operators` (in `Groups`); user `ai-operator` (in `_AGENTS`, member of
       `AI-Operators` only). Kept out of `_USERS` so the agent's own rights never cover its own account
-- [ ] 0.5 (22 Oct: RSAT AD + GPMC installed, Python 3.12.10, Git 2.55.0.5; Claude Code as ai-operator next) CLIENT01: RSAT Active Directory + Group Policy Management (`Add-WindowsCapability`), Python 3.12+, Claude Code
-- [ ] 0.6 (22 Oct: `admcp-11ba90a.zip` → `C:\ADAgent`, venv, check_server ok: 0 tools; the ai-operator `/mcp` check next) Copy the repo to CLIENT01, make the venv, `tests\check_server.py` prints ok; Claude Code started in
+- [x] 0.5 (22 Oct: RSAT AD + GPMC installed, Python 3.12.10, Git 2.55.0.5, Claude Code 2.1.309 as ai-operator) CLIENT01: RSAT Active Directory + Group Policy Management (`Add-WindowsCapability`), Python 3.12+, Claude Code
+- [x] 0.6 (22 Oct: `admcp-11ba90a.zip` → `C:\ADAgent`, venv, check_server ok: 0 tools; `/mcp` as ai-operator: admcp connected, after F-00's managed settings) Copy the repo to CLIENT01, make the venv, `tests\check_server.py` prints ok; Claude Code started in
       `operator\` as `ai-operator` lists 0 `admcp` tools
 - [ ] 0.7 Checkpoint `pre-build`
 
@@ -93,7 +93,7 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 - [ ] 5.5 `ad_disable_account`
 - [ ] 5.6 `ad_remove_group_member`
 - [ ] 5.7 `gpo_set_security_filter` ("Finance Drive Map" only)
-- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before the three destructive ones, deny shell and file writes; prove each rule once. Also deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
+- [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before the three destructive ones, deny shell and file writes; prove each rule once. Auto mode is Claude Code's default since 2.1.x and only user or managed settings can change `defaultMode`: decide it in managed settings and prove the ask rules still prompt. Deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
 
 ### Phase 6: Detections
 
