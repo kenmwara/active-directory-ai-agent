@@ -44,14 +44,21 @@ try { & "$App\.venv\Scripts\python.exe" tests\check_server.py } finally { Pop-Lo
 Say '0.6 Claude Code managed settings (admin-only, so neither ai-operator nor the agent can change them)'
 # Found 22 Oct: signing ai-operator in to Claude brought along every claude.ai connector on the account (Gmail, Drive,
 # Calendar, Cloudflare, Cyber Range: 133 tools), and the .mcp.json approval could not be saved because C:\ADAgent is
-# read-only to ai-operator. Managed settings: connectors off, admcp approved, the login token unreadable by the agent.
+# read-only to ai-operator. Later the same day 15 plugin MCP servers synced in from the account too (Slack, GitHub,
+# Notion...). Managed settings: connectors, synced plugins and skills off, admcp approved, the login token unreadable,
+# no file reads outside operator\.
 $managed = 'C:\Program Files\ClaudeCode'
 New-Item -ItemType Directory -Force -Path $managed | Out-Null
 $json = @'
 {
   "disableClaudeAiConnectors": true,
+  "syncClaudeAiPlugins": false,
+  "syncClaudeAiSkills": false,
   "enabledMcpjsonServers": ["admcp"],
-  "permissions": { "deny": ["Read(~/.claude/**)"] }
+  "permissions": {
+    "deny": ["Read(~/.claude/**)"],
+    "blockReadsOutsideWorkingDirectories": true
+  }
 }
 '@
 [IO.File]::WriteAllText("$managed\managed-settings.json", $json)   # UTF-8 without BOM; a BOM breaks JSON parsing

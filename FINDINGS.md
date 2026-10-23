@@ -37,7 +37,8 @@ Tags: OWASP LLM Top 10 (LLM01, LLM06), OWASP Agentic Top 10 (ASI01–ASI10), MIT
    (admin-only): `disableClaudeAiConnectors: true`, `enabledMcpjsonServers: ["admcp"]`, and a deny on reading
    `~/.claude/**` (the login token). Managed settings outrank user and project settings, and a project file cannot
    turn the connectors back on, so neither `ai-operator` nor a tricked agent can undo it. Re-test 22 Oct: `/mcp` lists
-   one server, `admcp`, connected (`07b-...`). Deny rule tested the same day: the agent was asked to read a canary file in `~/.claude` and was refused by the permission rule; reading `C:\ADAgent\README.md` still worked, so the rule is targeted, not a broken Read tool (`08-...`).
+   one server, `admcp`, connected (`07b-...`). Deny rule tested the same day: the agent was asked to read a canary file in `~/.claude` and was refused by the permission rule (`08-...`). The control read (`C:\ADAgent\README.md`) was not a valid control: it sits outside the working folder, so it hit a different prompt and was not allowed; the control is re-run on a file inside `operator\`.
+5. **Second wave, same day.** An hour after sign-in, `/mcp` listed 16 servers: `admcp` plus 15 plugin MCP servers synced from the account's enabled plugins (Slack, GitHub, Gmail, Notion, Linear, Datadog, PagerDuty, Canva...), none authenticated yet (`09-...`). Plugins can also carry hooks, which run code on the VM. Fix: `syncClaudeAiPlugins` and `syncClaudeAiSkills` false and `blockReadsOutsideWorkingDirectories` true, in the same managed file.
 
 Lesson for the write-up: an agent's permissions are the union of its directory rights **and** every tool its model
 account carries. Scope the account, not just the AD identity.
