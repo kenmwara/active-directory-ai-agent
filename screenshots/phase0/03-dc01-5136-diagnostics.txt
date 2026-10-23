@@ -1,0 +1,74 @@
+# DC01 diagnostics, 22 Oct 2026 (PowerShell Direct; transcript headers dropped)
+
+## 1. Audit rules, audit policy, live toggle
+Group: CN=AI-Operators,OU=Groups,DC=ad,DC=kenmwara,DC=com
+--- SACL on OU=Groups,DC=ad,DC=kenmwara,DC=com
+    AreAuditRulesProtected=False  rules=3
+    Everyone | WriteProperty | Success, Failure | All | inherited=False
+    Everyone | WriteProperty | Success | All | inherited=True
+    Everyone | WriteProperty | Success | All | inherited=True
+--- SACL on CN=AI-Operators,OU=Groups,DC=ad,DC=kenmwara,DC=com
+    AreAuditRulesProtected=False  rules=3
+    Everyone | WriteProperty | Success, Failure | All | inherited=True
+    Everyone | WriteProperty | Success | Descendents | inherited=True
+    Everyone | WriteProperty | Success | Descendents | inherited=True
+--- Domain root SACL (Everyone / write rules only)
+    Everyone | WriteProperty, WriteDacl, WriteOwner | Success | None
+    Everyone | WriteProperty | Success | All
+    Everyone | WriteProperty | Success | All
+--- auditpol
+
+
+
+
+--- SCENoApplyLegacyAuditPolicy =
+--- 5136 in the last 24 h, any object: 6
+--- Live toggle: every Security event in the next 15 s
+    5136 x2: A directory service object was modified.
+    4728 x1: A member was added to a security-enabled global group.
+    4737 x2: A security-enabled global group was changed.
+    4729 x1: A member was removed from a security-enabled global group.
+--- ai-operator is in: Domain Users, AI-Operators
+
+## 2. When does 5136 land?
+toggle took 0.1 s
+at 5s: 5136 total=0  matching 'AI-Operators'=0
+at 10s: 5136 total=2  matching 'AI-Operators'=2
+at 20s: 5136 total=2  matching 'AI-Operators'=2
+at 40s: 5136 total=2  matching 'AI-Operators'=2
+--- each 5136 since the toggle
+  +8.7s  DN=CN=AI-Operators,OU=Groups,DC=ad,DC=kenmwara,DC=com  attr=member  op=Value Added  msgLen=661
+    xml ObjectDN=CN=AI-Operators,OU=Groups,DC=ad,DC=kenmwara,DC=com
+  +8.7s  DN=CN=AI-Operators,OU=Groups,DC=ad,DC=kenmwara,DC=com  attr=member  op=Value Deleted  msgLen=663
+    xml ObjectDN=CN=AI-Operators,OU=Groups,DC=ad,DC=kenmwara,DC=com
+
+## 3. phase0-dc01.ps1 run 4 (polling fix)
+INFO: 
+== 0.3 Audit GPO on Domain Controllers
+  Account Management
+  Security Group Management               Success and Failure
+  User Account Management                 Success and Failure
+  Directory Service Changes               Success and Failure
+INFO: 
+== 0.4 OU _AGENTS, group AI-Operators, user ai-operator
+INFO: 
+== Proof: 4728 + 5136 from a real group change
+  after 7 s: 4728 x1, 5136 x2
+INFO: 
+== Summary
+
+
+Audit GPO linked to Domain Controllers : True
+auditpol: all 3 Success and Failure    : True
+ai-operator is in                      : Domain Users, AI-Operators
+ai-operator OU                         : CN=ai-operator,OU=_AGENTS,DC=ad,DC=kenmwara,DC=com
+4728 events (member added)             : 1
+5136 events (object modified)          : 2
+
+
+
+4728: A member was added to a security-enabled global group.
+5136: A directory service object was modified.
+
+PHASE 0.3 + 0.4: PASS
+
