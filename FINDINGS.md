@@ -22,7 +22,7 @@ Tags: OWASP LLM Top 10 (LLM01, LLM06), OWASP Agentic Top 10 (ASI01–ASI10), MIT
 
 ## F-00: the agent identity inherited my whole Claude account
 
-1. **What happened.** Signing `KENLABi-operator` in to Claude Code with my Claude account brought along every claude.ai
+1. **What happened.** Signing `KENLAB\ai-operator` in to Claude Code with my Claude account brought along every claude.ai
    connector on that account: Gmail, Google Drive, Google Calendar, Cloudflare Developer Platform and the Cyber Range
    agent, 133 tools (`screenshots/phase0/07a-...`). An identity scoped to AD helpdesk rights could have sent email as
    me, read my Drive, changed live Cloudflare infrastructure and run commands in the Range. Separately, `admcp` did
