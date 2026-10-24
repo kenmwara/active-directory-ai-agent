@@ -82,8 +82,8 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
 ### Phase 4: Delegation
 
-- [ ] 4.1 `lab\setup-lab.ps1` (delegation section) (24 Oct: written as `-Part Delegation` (DC01) + `-Part EventSource` (CLIENT01), parse-checked; Ken runs it) grants `AI-Operators` exactly the v1 rights in SolutionDesign §5 (`lockoutTime` and `userAccountControl` on users in `_USERS`, `member` on groups in `OU=Groups`); the D6–D8 rights are v2
-- [ ] 4.2 Delegation matrix: each right works inside its scope and fails one step outside it, AD's error word for word (24 Oct: `lab	est-delegation.ps1` written, run as ai-operator with 5 test targets; any out-of-scope 'allowed' prints FINDING and is undone)
+- [ ] 4.1 `lab\setup-lab.ps1` (delegation section) grants `AI-Operators` exactly the v1 rights in SolutionDesign §5 (`lockoutTime` and `userAccountControl` on users in `_USERS`, `member` on groups in `OU=Groups`); the D6–D8 rights are v2 (24 Oct: written as `-Part Delegation` (DC01) + `-Part EventSource` (CLIENT01), parse-checked; Ken runs it)
+- [ ] 4.2 Delegation matrix: each right works inside its scope and fails one step outside it, AD's error word for word (24 Oct: `lab\test-delegation.ps1` written, run as ai-operator with 5 test targets; any out-of-scope 'allowed' prints FINDING and is undone)
 - [ ] 4.3 (v2) Verify the move rights and the RSoP right in practice; update SolutionDesign §5 if reality differs
 
 ### Phase 5: Change and destructive tools
