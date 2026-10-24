@@ -69,11 +69,11 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 
 Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
-- [ ] 3.1 Shared runner (JSON on stdin → fixed `.ps1` → JSON out, errors verbatim, 200-row cap) + call logger (JSON lines + Application event log, source `admcp`)
-- [ ] 3.2 `ad_whoami`
-- [ ] 3.3 `admcp_my_tool_calls`
-- [ ] 3.4 `ad_search_users` (with `locked_only`)
-- [ ] 3.5 `ad_get_group_members`
+- [ ] 3.1 Shared runner (JSON on stdin → fixed `.ps1` → JSON out, errors verbatim, 200-row cap) + call logger (JSON lines + Application event log, source `admcp`) (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
+- [ ] 3.2 `ad_whoami` (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
+- [ ] 3.3 `admcp_my_tool_calls` (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
+- [ ] 3.4 `ad_search_users` (with `locked_only`) (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
+- [ ] 3.5 `ad_get_group_members` (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
 - [ ] 3.6 (v2) `ad_list_locked_accounts`
 - [ ] 3.7 (v2) `gpo_list`
 - [ ] 3.8 (v2) `gpo_get_report`
@@ -82,8 +82,8 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
 ### Phase 4: Delegation
 
-- [ ] 4.1 `lab\setup-lab.ps1` (delegation section) grants `AI-Operators` exactly the v1 rights in SolutionDesign §5 (`lockoutTime` and `userAccountControl` on users in `_USERS`, `member` on groups in `OU=Groups`); the D6–D8 rights are v2
-- [ ] 4.2 Delegation matrix: each right works inside its scope and fails one step outside it, AD's error word for word
+- [ ] 4.1 `lab\setup-lab.ps1` (delegation section) (24 Oct: written as `-Part Delegation` (DC01) + `-Part EventSource` (CLIENT01), parse-checked; Ken runs it) grants `AI-Operators` exactly the v1 rights in SolutionDesign §5 (`lockoutTime` and `userAccountControl` on users in `_USERS`, `member` on groups in `OU=Groups`); the D6–D8 rights are v2
+- [ ] 4.2 Delegation matrix: each right works inside its scope and fails one step outside it, AD's error word for word (24 Oct: `lab	est-delegation.ps1` written, run as ai-operator with 5 test targets; any out-of-scope 'allowed' prints FINDING and is undone)
 - [ ] 4.3 (v2) Verify the move rights and the RSoP right in practice; update SolutionDesign §5 if reality differs
 
 ### Phase 5: Change and destructive tools
@@ -134,3 +134,4 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 |---|---|
 | 21 Oct 2026 | Phase 1: SolutionDesign v0.1 → v1.0 (D1–D15). Phase 2: repo, CLAUDE.md, this plan, FINDINGS.md, empty server + stdio check (0 tools, mutation-tested). Next: Phase 0 at the laptop, then Phase 3 |
 | 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS; CLIENT01 admin part (RSAT, Python, Git, `C:\ADAgent`, stdio ok) done. F-00 found and fixed (the agent identity inherited the Claude account's connectors and plugins; admin-only managed settings). C: fell from 21 to 2.8 GB (CLIENT01 wrote 11.6 GB in 2 h, plus RAM-sized `.VMRS` files): VMs set to AutomaticStopAction ShutDown + Production checkpoints. 0.7 `pre-build` taken with both VMs off. **Phase 0 done.** Lean cut agreed (D16: 4 read + 3 change tools, 13 campaign tests). Next: Phase 3, `ad_whoami`. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
+| 24 Oct 2026 | Phase 3 + 4 code written on the host: `admcp/runner.py` (JSON on stdin to one fixed `.ps1`, errors verbatim, 200-row cap, refused calls logged as `rejected`), `admcp/calllog.py` (JSON lines + Application event log; message via env var, never the command line), 4 read tools in `server.py` + `scripts/ad_whoami.ps1`, `ad_search_users.ps1`, `ad_get_group_members.ps1` (each validates again; the name pattern has no quotes, so it cannot break out of the AD filter). `tests/check_server.py` = 4 tools ok; new `tests/check_runner.py` (stub scripts, no domain) ok; 4 of 4 mutants caught; every `.ps1` parses. Phase 4: `lab/setup-lab.ps1` (dsacls grants, idempotent) + `lab/test-delegation.ps1`. Design note for the campaign: write on `userAccountControl` is the whole flag word (DONT_REQ_PREAUTH, PASSWD_NOTREQD too), not just disable. Next: Copy-VMFile to CLIENT01, `setup-lab.ps1 -Part Delegation` on DC01 and `-Part EventSource` on CLIENT01, then each tool's happy + denial run with DC01's Security log |

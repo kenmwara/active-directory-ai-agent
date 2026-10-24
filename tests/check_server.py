@@ -10,7 +10,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 ROOT = Path(__file__).resolve().parent.parent
-EXPECTED: set[str] = set()  # add each tool's name as it lands (PhasedSolutionPlan.md)
+EXPECTED: set[str] = {"ad_whoami", "admcp_my_tool_calls", "ad_search_users", "ad_get_group_members"}
 
 
 async def tool_names() -> set[str]:
