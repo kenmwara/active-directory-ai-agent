@@ -32,6 +32,13 @@ if ($Step -eq 'Deploy') {
     "`n== DC01: 4.1 delegation, layout, out-of-scope test objects"
     $dc = Invoke-Command -VMName DC01 -Credential $cred -ScriptBlock {
         Get-Service ADWS, NTDS, DNS, Netlogon | ForEach-Object { "service $($_.Name): $($_.Status)" }
+        # 24 Oct: at boot DHCP started before AD could vouch for it (System event 1046, "not authorized ... stopped
+        # servicing clients"), so CLIENT01 got no lease and no DNS server. Start it after AD from now on, and restart it
+        # now if its latest authorization event is still the failure (1044 = authorized).
+        sc.exe config DHCPServer start= delayed-auto | Out-Null
+        $auth = Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-DHCP-Server'; Id = 1044, 1046 } -MaxEvents 1 -ErrorAction SilentlyContinue
+        if ($auth.Id -eq 1046) { Restart-Service DHCPServer; "DHCPServer was not authorized (event 1046, $($auth.TimeCreated)): restarted" }
+        else { "DHCPServer authorized: " + (Get-Service DHCPServer).Status }
         & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\setup-lab.ps1 -Part Delegation
         & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\setup-detector.ps1 | ForEach-Object { "detector setup: $_" }
         & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\phase4-dc01.ps1
