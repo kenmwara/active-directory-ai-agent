@@ -83,7 +83,8 @@ if ($Step -eq 'Deploy') {
         & powershell -NoProfile -ExecutionPolicy Bypass -File "$App\lab\setup-lab.ps1" -Part EventSource
         # 5.8: Claude Code managed settings (admin-only file, so neither ai-operator nor the agent can loosen them).
         # Phase 0 keys stay; added: shells and file writes denied, the destructive tool always asks, no bypass mode,
-        # and defaultMode pinned to "default" so auto mode can't skip the ask rule.
+        # and defaultMode pinned to "default". 24 Oct: Shift+Tab still reached auto mode (a classifier approves instead of
+        # a person), so auto mode is disabled too: every action is either allowed, asked or denied by a written rule.
         $managed = 'C:\Program Files\ClaudeCode'
         New-Item -ItemType Directory -Force -Path $managed | Out-Null
         $json = @'
@@ -96,6 +97,7 @@ if ($Step -eq 'Deploy') {
   "permissions": {
     "defaultMode": "default",
     "disableBypassPermissionsMode": "disable",
+    "disableAutoMode": "disable",
     "ask": ["mcp__admcp__ad_disable_account"],
     "deny": ["Read(~/.claude/**)", "Bash", "PowerShell", "Write", "Edit", "NotebookEdit", "WebFetch", "WebSearch"],
     "blockReadsOutsideWorkingDirectories": true
