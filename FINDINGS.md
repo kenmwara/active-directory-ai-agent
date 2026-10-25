@@ -61,7 +61,7 @@ account carries. Scope the account, not just the AD identity.
    without it; `ad_whoami.ps1` uses `WindowsIdentity.GetCurrent()` and looks the account up by SID.
    `tests/check_server.py` now starts the server with `USERNAME`/`USERDOMAIN` forged and asserts the logged caller is
    the real logon: ok on the host (`DESKTOP-22M3C3P\admin`); the old env-based code fails it (logged
-   `FORGED\forged-user`). CLIENT01 re-run as `ai-operator`: pending.
+   `FORGED\forged-user`). CLIENT01, 24 Oct: deploy 4's check logged `KENLAB\a-kkariuki`, and the first Claude Code prompt as `ai-operator` reported `KENLAB\ai-operator`.
 
 ## F-02: a claude-artifacts MCP server tried to load in the agent's session
 
