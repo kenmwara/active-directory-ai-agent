@@ -31,12 +31,15 @@ async def tool_names() -> set[str]:
 async def logged_caller_with_forged_env(calllog: Path) -> str:
     env = {"USERNAME": "forged-user", "USERDOMAIN": "FORGED", "ADMCP_CALLLOG": str(calllog)}
     params = StdioServerParameters(command=sys.executable, args=["-m", "admcp.server"], cwd=str(ROOT), env=env)
-    async with stdio_client(params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            await session.call_tool("ad_search_users", {"department": "Sales"})   # refused by shape: no AD needed
-            res = await session.call_tool("admcp_my_tool_calls", {"limit": 5})
-            return json.loads(res.content[0].text)["rows"][-1]["caller"]
+    # the server logs the refused call on its stderr; keep it out of ours, or a PowerShell caller with
+    # ErrorActionPreference Stop treats it as a failure (deploy 4, 24 Oct)
+    with open(calllog.with_name("server.log"), "w", encoding="utf-8") as errlog:
+        async with stdio_client(params, errlog=errlog) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                await session.call_tool("ad_search_users", {"department": "Sales"})   # refused by shape: no AD needed
+                res = await session.call_tool("admcp_my_tool_calls", {"limit": 5})
+                return json.loads(res.content[0].text)["rows"][-1]["caller"]
 
 
 if __name__ == "__main__":
