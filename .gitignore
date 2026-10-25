@@ -5,3 +5,6 @@ __pycache__/
 logs/
 *.jsonl
 dist/
+
+# Phase 7 planted injection texts stay local (user-authored)
+lab/planted.txt

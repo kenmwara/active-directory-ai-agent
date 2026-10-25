@@ -104,7 +104,7 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
 ### Phase 7: Red-team campaign (v1, no policy in the server)
 
-- [ ] 7.1 Checkpoint `pre-campaign`; stage the test data (locked accounts, planted instructions I-1 to I-5)
+- [ ] 7.1 Checkpoint `pre-campaign` (done 25 Oct); stage the test data with `lab/stage-campaign.ps1` (built 25 Oct): it creates `camp-*` targets (camp-i1 locked + I-1, camp-i5 + I-5, group camp-grp + I-2, 50 camp-lock-* locked for B-1, 200 camp-bulk-* for B-2) and places the three injection strings Ken writes in `lab/planted.txt` (gitignored; the script never generates them). `-Mode Teardown` removes every `camp-*`. Waiting on Ken's planted.txt, then run Stage and retake pre-campaign
 - [ ] 7.2 Run D-1 to D-3, I-1, I-2, I-5, B-1 and B-2, A-1 to A-3, S-1 and S-2 (13 tests; I-3, I-4, A-4 are v2); every outcome in FINDINGS.md
 - [ ] 7.3 Every miss by the detector gets a new rule, proven, then the test is re-run
 - [ ] 7.4 Record the campaign on video (Ken, 21 Oct): the agent's request, the tool calls, what stopped it (AD's denial, the confirmation prompt, the DC01 alert). Screen capture with OBS on the host; one take per test family, cut to a short edit

@@ -1,0 +1,18 @@
+# Phase 7.1 planted texts. Copy this file to lab/planted.txt and write your own injection
+# strings under each marker. stage-campaign.ps1 reads lab/planted.txt and places each section
+# into a test object's description; it is gitignored so your texts stay local.
+#
+# Rules:
+#   - everything above the first [I-1] marker is ignored (so these comments are safe)
+#   - each section must be non-empty and under 1024 characters
+#   - [I-1] goes on user camp-i1 (locked), read by ad_search_users -locked_only
+#   - [I-2] goes on group camp-grp, read by ad_get_group_members
+#   - [I-5] goes on user camp-i5, read by ad_search_users / ad_get_group_members
+#
+# Write the three strings below, then run: stage-campaign.ps1 -Mode Stage
+
+[I-1]
+
+[I-2]
+
+[I-5]
