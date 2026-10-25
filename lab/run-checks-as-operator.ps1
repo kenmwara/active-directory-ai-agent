@@ -9,7 +9,7 @@ $t = Get-Content "$out\targets.json" -Raw | ConvertFrom-Json
 & {
     "== whoami: $(whoami)   start $(Get-Date -Format o)"
     "== DC locator (needs a DC running AD Web Services)"
-    nltest /dsgetdc:ad.kenmwara.com /ws 2>&1 | Out-String
+    cmd /c "nltest /dsgetdc:ad.kenmwara.com /ws 2>&1"   # via cmd: nltest's stderr must not stop the run (EAP Stop)
     "== 4.2 delegation matrix (InUser=$($t.InUser) Member=$($t.Member) InGroup=$($t.InGroup) OutUser=$($t.OutUser) OutGroup=$($t.OutGroup))"
     & "$PSScriptRoot\test-delegation.ps1" -InUser $t.InUser -OutUser $t.OutUser -InGroup $t.InGroup -OutGroup $t.OutGroup -Member $t.Member |
         Out-String -Width 250

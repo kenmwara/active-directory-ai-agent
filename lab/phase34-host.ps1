@@ -46,11 +46,20 @@ if ($Step -eq 'Deploy') {
         $App = 'C:\ADAgent'
         # 24 Oct: CLIENT01 booted before DC01, so the AD module found no DC ("Unable to find a default server with Active
         # Directory Web Services running"). Find one now; if that fails, flush DNS, restart Netlogon and try again.
-        $loc = nltest /dsgetdc:ad.kenmwara.com /ws /force 2>&1 | Out-String
+        # The real cause on 24 Oct: DC01 is the lab's DHCP server, CLIENT01 booted first, so it had no lease and therefore
+        # no IPv4 DNS server (SRV lookups timed out). Renew the lease when no DNS server is set.
+        if (-not (Get-DnsClientServerAddress -AddressFamily IPv4 | Where-Object ServerAddresses)) {
+            "no IPv4 DNS server on CLIENT01 (no DHCP lease from DC01): ipconfig /renew"
+            ipconfig /renew | Out-Null; Start-Sleep 5
+        }
+        "IPv4: " + ((Get-NetIPAddress -AddressFamily IPv4 | Where-Object InterfaceAlias -notmatch 'Loopback' |
+            ForEach-Object { "$($_.InterfaceAlias)=$($_.IPAddress)" }) -join '; ') + "   DNS: " +
+            ((Get-DnsClientServerAddress -AddressFamily IPv4 | Where-Object ServerAddresses | ForEach-Object { $_.ServerAddresses -join ',' }) -join '; ')
+        $loc = cmd /c "nltest /dsgetdc:ad.kenmwara.com /ws /force 2>&1" | Out-String
         if ($loc -notmatch 'DC: \\\\') {
             "DC locator failed, retrying after flushdns + Netlogon restart:`n$loc"
             ipconfig /flushdns | Out-Null; Restart-Service Netlogon; Start-Sleep 10
-            $loc = nltest /dsgetdc:ad.kenmwara.com /ws /force 2>&1 | Out-String
+            $loc = cmd /c "nltest /dsgetdc:ad.kenmwara.com /ws /force 2>&1" | Out-String
         }
         "DC locator: " + (($loc -split "`r?`n" | Where-Object { $_ -match 'DC:|Address:|Flags:' }) -join ' | ')
         "ADWS port 9389 on DC01 reachable: " + (Test-NetConnection DC01 -Port 9389 -WarningAction SilentlyContinue).TcpTestSucceeded
