@@ -18,10 +18,13 @@ if ($Part -eq "EventSource") {
 Import-Module ActiveDirectory
 $domain = Get-ADDomain
 $who = "$($domain.NetBIOSName)\AI-Operators"
+# Groups is found by name, as phase0-dc01.ps1 does: it is not guaranteed to sit at the domain root
+$groupsOU = @(Get-ADOrganizationalUnit -Filter "Name -eq 'Groups'")
+if ($groupsOU.Count -ne 1) { throw "Expected exactly one OU named Groups, found $($groupsOU.Count)" }
 $grants = @(
     @{ ou = "OU=_USERS,$($domain.DistinguishedName)"; right = "WP;lockoutTime;user" },         # ad_unlock_account
     @{ ou = "OU=_USERS,$($domain.DistinguishedName)"; right = "WP;userAccountControl;user" },  # ad_disable_account
-    @{ ou = "OU=Groups,$($domain.DistinguishedName)"; right = "WP;member;group" }              # ad_add_group_member
+    @{ ou = $groupsOU[0].DistinguishedName;           right = "WP;member;group" }              # ad_add_group_member
 )
 foreach ($g in $grants) {
     Get-ADOrganizationalUnit -Identity $g.ou | Out-Null   # stops here, loudly, if the OU is missing

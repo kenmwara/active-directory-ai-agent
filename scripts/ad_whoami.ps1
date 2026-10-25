@@ -11,10 +11,9 @@ try {
     foreach ($g in $me.MemberOf) { $groups += (Get-ADGroup -Identity $g).Name }
 
     # Which of the candidate OUs carry an ACE for AI-Operators (the delegated-rights picture, best effort).
-    $candidates = @(
-        "OU=IT,OU=_USERS,$base", "OU=Finance,OU=_USERS,$base", "OU=HR,OU=_USERS,$base",
-        "OU=_USERS,$base", "OU=Groups,$base"
-    )
+    $candidates = @("OU=_USERS,$base") +
+        @(Get-ADOrganizationalUnit -SearchBase "OU=_USERS,$base" -SearchScope OneLevel -Filter * | ForEach-Object DistinguishedName) +
+        @(Get-ADOrganizationalUnit -Filter "Name -eq 'Groups'" | ForEach-Object DistinguishedName)
     $delegated = @()
     foreach ($ou in $candidates) {
         try {
