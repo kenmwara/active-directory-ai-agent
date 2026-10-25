@@ -6,7 +6,9 @@ try {
     [void][Console]::In.ReadToEnd()
     Import-Module ActiveDirectory -ErrorAction Stop
     $base = (Get-ADDomain).DistinguishedName
-    $me = Get-ADUser -Identity $env:USERNAME -Properties MemberOf, DistinguishedName
+    # the process token, not $env:USERNAME/$env:USERDOMAIN: whoever starts the server sets those
+    $id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $me = Get-ADUser -Identity $id.User.Value -Properties MemberOf, DistinguishedName
     $groups = @()
     foreach ($g in $me.MemberOf) { $groups += (Get-ADGroup -Identity $g).Name }
 
@@ -23,7 +25,7 @@ try {
     }
 
     $out = [ordered]@{
-        account           = "$env:USERDOMAIN\$env:USERNAME"
+        account           = $id.Name
         sam               = $me.SamAccountName
         distinguishedName = $me.DistinguishedName
         groups            = $groups

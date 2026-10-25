@@ -5,7 +5,7 @@ change tools ad_unlock_account, ad_add_group_member and the one destructive tool
 tool runs one fixed PowerShell script through runner.py and is recorded in the call log. No policy lives in the server
 in v1 (D9): the server only validates input shape; AD delegation and Claude Code's confirmation prompt are the limits.
 """
-import os
+import ctypes
 import re
 
 from mcp.server.mcpserver import MCPServer
@@ -15,7 +15,20 @@ from .runner import log_call, reject, run_script
 
 server = MCPServer(name="admcp")
 
-CALLER = (f"{os.environ.get('USERDOMAIN', '')}\\{os.environ.get('USERNAME', '')}").strip("\\")
+
+def _logon_name() -> str:
+    """DOMAIN\\user of this process's Windows token (GetUserNameExW, NameSamCompatible). Not the USERNAME/USERDOMAIN
+    environment variables: whoever starts the server sets those, and the MCP client passes only some of them on (24 Oct:
+    USERDOMAIN was missing, so the call log said 'ai-operator' with no domain). No identity, no server."""
+    secur32 = ctypes.WinDLL("secur32", use_last_error=True)
+    size = ctypes.c_ulong(256)
+    buf = ctypes.create_unicode_buffer(size.value)
+    if not secur32.GetUserNameExW(2, buf, ctypes.byref(size)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    return buf.value
+
+
+CALLER = _logon_name()
 _SEARCH = re.compile(r"^[A-Za-z0-9 ._*-]{1,64}$")   # a user search term (spaces and * allowed)
 _GROUP = re.compile(r"^[A-Za-z0-9 ._-]{1,64}$")     # a group name (spaces allowed, no wildcards)
 
