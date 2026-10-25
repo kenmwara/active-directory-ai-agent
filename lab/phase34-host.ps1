@@ -106,7 +106,7 @@ if ($Step -eq 'Deploy') {
              "Agent", "Skill", "Workflow", "Artifact", "ArtifactComments", "ArtifactData", "DesignSync",
              "CronCreate", "CronDelete", "CronList", "ScheduleWakeup", "RemoteTrigger", "Monitor", "TaskStop",
              "SendMessage", "PushNotification", "SendFeedback", "ReportFindings", "EnterWorktree", "ExitWorktree",
-             "ListMcpResourcesTool", "ReadMcpResourceTool", "ReadMcpResourceDirTool"],
+             "ListMcpResourcesTool", "ReadMcpResourceTool", "ReadMcpResourceDirTool", "ListAgents"],
     "blockReadsOutsideWorkingDirectories": true
   }
 }
