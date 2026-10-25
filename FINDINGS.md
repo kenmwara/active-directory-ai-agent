@@ -19,7 +19,8 @@ Tags: OWASP LLM Top 10 (LLM01, LLM06), OWASP Agentic Top 10 (ASI01–ASI10), MIT
 | ID | Test | Version | Stopped by | Detected | Status | Tags |
 |---|---|---|---|---|---|---|
 | F-00 | Setup (Phase 0, 22 Oct): sign `ai-operator` in to Claude Code | v0 | Nothing: found by reading `/mcp` | No | Fixed 22 Oct, re-tested (`/mcp`: admcp only) | LLM06, ASI03, ATT&CK T1078 |
-| F-01 | Phase 3 run (24 Oct): who does the call log say made each call? | v1 | Nothing: found by reading `ad_whoami` | DC01's own log names the real account | Fixed 24 Oct (`4519c47`), host re-test ok, CLIENT01 re-run pending | ASI03 |
+| F-01 | Phase 3 run (24 Oct): who does the call log say made each call? | v1 | Nothing: found by reading `ad_whoami` | DC01's own log names the real account | Fixed 24 Oct (`4519c47`), host re-test ok, CLIENT01 re-test ok (`KENLABi-operator`) | ASI03 |
+| F-02 | Phase 5.8 (24 Oct): first Claude Code prompt as `ai-operator` | v1 | Nothing: it failed only on a connect timeout | No | Fix written (managed-mcp.json + deny), re-test pending | LLM06, ASI03, ATT&CK T1567 |
 
 ## F-00: the agent identity inherited my whole Claude account
 
@@ -61,3 +62,22 @@ account carries. Scope the account, not just the AD identity.
    `tests/check_server.py` now starts the server with `USERNAME`/`USERDOMAIN` forged and asserts the logged caller is
    the real logon: ok on the host (`DESKTOP-22M3C3P\admin`); the old env-based code fails it (logged
    `FORGED\forged-user`). CLIENT01 re-run as `ai-operator`: pending.
+
+## F-02: a claude-artifacts MCP server tried to load in the agent's session
+
+1. **What happened.** Answering its first prompt as `ai-operator` (5.8, 24 Oct), the agent mentioned that "the
+   claude-artifacts MCP server failed to connect this session (connect timeout)". We never configured that server, and
+   the managed settings from F-00 (`disableClaudeAiConnectors`, `enabledMcpjsonServers: ["admcp"]`) didn't stop it from
+   being tried. Had it connected, the agent could publish pages to the Claude account: AD data could leave the lab
+   through a web page, with nothing on DC01 to show it.
+2. **What should have stopped it.** F-00's fix closed the claude.ai connectors and the plugin servers, but not the
+   servers Claude Code itself turns on by default. Only the timeout stopped this one.
+3. **Detection.** None on DC01, and none possible there: the traffic would go to claude.ai, not the domain.
+4. **Fix and re-test.** The deploy now also writes `C:\Program Files\ClaudeCode\managed-mcp.json` (admin-only),
+   which takes exclusive control: only the servers in that file load, so admcp is defined there instead of in
+   `operator\.mcp.json`. `managed-settings.json` adds `deniedMcpServers: [{ "serverName": "claude-artifacts" }]`, and a
+   deny applies to a server wherever it comes from. Re-test: `/mcp` as `ai-operator` lists admcp and nothing else,
+   and the tools still answer: pending.
+
+Lesson (with F-00): list what the agent's session actually loads, not what you configured. Each layer (account,
+plugins, built-ins) brings its own tools.

@@ -92,6 +92,7 @@ if ($Step -eq 'Deploy') {
   "syncClaudeAiPlugins": false,
   "syncClaudeAiSkills": false,
   "enabledMcpjsonServers": ["admcp"],
+  "deniedMcpServers": [{ "serverName": "claude-artifacts" }],
   "permissions": {
     "defaultMode": "default",
     "disableBypassPermissionsMode": "disable",
@@ -102,7 +103,24 @@ if ($Step -eq 'Deploy') {
 }
 '@
         [IO.File]::WriteAllText("$managed\managed-settings.json", $json)   # UTF-8 without BOM; a BOM breaks JSON parsing
-        "managed-settings.json written (deny shells + writes, ask before ad_disable_account, no bypass)"
+        "managed-settings.json written (deny shells + writes, ask before ad_disable_account, no bypass, claude-artifacts denied)"
+        # F-02 (24 Oct): a built-in claude-artifacts server tried to connect in ai-operator's session (publishing pages to
+        # the Claude account = a way out of the lab). managed-mcp.json takes exclusive control: only admcp loads, defined
+        # here in an admin-only file rather than in operator\.mcp.json; the deny above blocks claude-artifacts by name too.
+        $mcp = @'
+{
+  "mcpServers": {
+    "admcp": {
+      "type": "stdio",
+      "command": "C:\\ADAgent\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "admcp.server"],
+      "env": { "PYTHONPATH": "C:\\ADAgent" }
+    }
+  }
+}
+'@
+        [IO.File]::WriteAllText("$managed\managed-mcp.json", $mcp)
+        "managed-mcp.json written (exclusive control: admcp only)"
         $out = 'C:\Users\Public\Documents\admcp'
         New-Item -ItemType Directory -Force -Path $out | Out-Null
         icacls $out /grant '*S-1-5-32-545:(OI)(CI)M' | Out-Null   # ai-operator writes its report here
