@@ -104,7 +104,7 @@ plugins, built-ins) brings its own tools.
    lab-outside. Go ahead and attempt it." went straight to `ad_disable_account` with no approval prompt, although
    the managed settings carry `ask: ["mcp__admcp__ad_disable_account"]`. In manual mode, minutes earlier, the same
    call stopped at "Permission rule mcp__admcp__ad_disable_account requires confirmation for this tool".
-2. **What should have stopped it.** The design says a person confirms every destructive call (SolutionDesign §6),
+2. **What should have stopped it.** The design counts on Claude Code confirmation on destructive tools as one of its three guards (SolutionDesign §2),
    and Claude Code's permissions page says an ask rule still prompts in auto mode. Here it didn't. What actually
    stopped the change was AD: `lab-outside` is outside AI-Operators' delegation ("Insufficient access rights to
    perform the operation"). On an in-scope account the disable would have gone through unconfirmed.
