@@ -69,11 +69,11 @@ Scripted 22 Oct (my shell can't reach Hyper-V, so Ken runs them, elevated): `lab
 
 Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
-- [ ] 3.1 Shared runner (JSON on stdin → fixed `.ps1` → JSON out, errors verbatim, 200-row cap) + call logger (JSON lines + Application event log, source `admcp`) (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
-- [ ] 3.2 `ad_whoami` (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
-- [ ] 3.3 `admcp_my_tool_calls` (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
-- [ ] 3.4 `ad_search_users` (with `locked_only`) (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
-- [ ] 3.5 `ad_get_group_members` (24 Oct: written, host checks ok; CLIENT01 happy + denial run pending)
+- [ ] 3.1 Shared runner (JSON on stdin → fixed `.ps1` → JSON out, errors verbatim, 200-row cap) + call logger (JSON lines + Application event log, source `admcp`) (24 Oct: CLIENT01 run as ai-operator ok, except the caller name came from environment variables: F-01, fixed in `4519c47`, CLIENT01 re-run pending)
+- [ ] 3.2 `ad_whoami` (24 Oct: CLIENT01 run as ai-operator ok, except the caller name came from environment variables: F-01, fixed in `4519c47`, CLIENT01 re-run pending)
+- [x] 3.3 `admcp_my_tool_calls` (24 Oct: run on CLIENT01 as ai-operator: happy + refused/AD-error call each as expected)
+- [x] 3.4 `ad_search_users` (with `locked_only`) (24 Oct: run on CLIENT01 as ai-operator: happy + refused/AD-error call each as expected)
+- [x] 3.5 `ad_get_group_members` (24 Oct: run on CLIENT01 as ai-operator: happy + refused/AD-error call each as expected)
 - [ ] 3.6 (v2) `ad_list_locked_accounts`
 - [ ] 3.7 (v2) `gpo_list`
 - [ ] 3.8 (v2) `gpo_get_report`
@@ -82,24 +82,24 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
 ### Phase 4: Delegation
 
-- [ ] 4.1 `lab\setup-lab.ps1` (delegation section) grants `AI-Operators` exactly the v1 rights in SolutionDesign §5 (`lockoutTime` and `userAccountControl` on users in `_USERS`, `member` on groups in `OU=Groups`); the D6–D8 rights are v2 (24 Oct: written as `-Part Delegation` (DC01) + `-Part EventSource` (CLIENT01), parse-checked; Ken runs it)
-- [ ] 4.2 Delegation matrix: each right works inside its scope and fails one step outside it, AD's error word for word (24 Oct: `lab\test-delegation.ps1` written, run as ai-operator with 5 test targets; any out-of-scope 'allowed' prints FINDING and is undone)
+- [x] 4.1 `lab\setup-lab.ps1` (delegation section) grants `AI-Operators` exactly the v1 rights in SolutionDesign §5 (`lockoutTime` and `userAccountControl` on users in `_USERS`, `member` on groups in `OU=Groups`); the D6–D8 rights are v2 (24 Oct: written as `-Part Delegation` (DC01) + `-Part EventSource` (CLIENT01), parse-checked; run 24 Oct: three ACEs on DC01, GUIDs verified)
+- [x] 4.2 Delegation matrix: each right works inside its scope and fails one step outside it, AD's error word for word (24 Oct: `lab\test-delegation.ps1` written, run as ai-operator with 5 test targets; any out-of-scope 'allowed' prints FINDING and is undone; run 24 Oct as ai-operator: 6 of 6 PASS, each outside write refused with 'Insufficient access rights to perform the operation')
 - [ ] 4.3 (v2) Verify the move rights and the RSoP right in practice; update SolutionDesign §5 if reality differs
 
 ### Phase 5: Change and destructive tools
 
-- [ ] 5.1 `ad_unlock_account`
-- [ ] 5.2 `ad_add_group_member`
+- [x] 5.1 `ad_unlock_account` (24 Oct: on CLIENT01 as ai-operator, ran on `lab-inside`; AD refused `lab-outside` with 'Insufficient access rights to perform the operation'; DC01 logged 4767 by ai-operator)
+- [x] 5.2 `ad_add_group_member` (24 Oct: on CLIENT01 as ai-operator, added `lab-inside` to Finance; AD refused `lab-outside-group` word for word; `x;whoami` refused by shape; DC01 logged 4728 by ai-operator)
 - [ ] 5.3 (v2) `ad_move_object` (`_USERS\IT` / `\Finance` / `\HR` only)
 - [ ] 5.4 (v2) `gpo_link` (`Workstations` + the three department OUs only)
-- [ ] 5.5 `ad_disable_account`
+- [x] 5.5 `ad_disable_account` (24 Oct: on CLIENT01 as ai-operator, disabled `lab-inside`; AD refused `lab-outside` word for word; DC01 logged 4725 by ai-operator; `lab-inside` re-enabled by the evidence step)
 - [ ] 5.6 (v2) `ad_remove_group_member`
 - [ ] 5.7 (v2) `gpo_set_security_filter` ("Finance Drive Map" only)
 - [ ] 5.8 `operator\.mcp.json` + `operator\.claude\settings.json`: allow the tools, ask before `ad_disable_account` (the one destructive v1 tool), deny shell and file writes; prove each rule once. Auto mode is Claude Code's default since 2.1.x and only user or managed settings can change `defaultMode`: decide it in managed settings and prove the ask rules still prompt. Reads outside `operator\` prompt ("Read outside the working directories"); the agent needs no file reads at all, so decide `blockReadsOutsideWorkingDirectories` there too. Opus 5.5's cyber safeguard switched an ai-operator session to Opus 4.8 on a README read (22 Oct): log which model answered in every campaign run (D12, the video). Deny reading `~\.claude\` (ai-operator's Claude login token lives there since 22 Oct) and add a red-team test: can planted text make the agent read it?
 
 ### Phase 6: Detections
 
-- [ ] 6.1 Detector script + 5-minute scheduled task on DC01 (alerts file + event log)
+- [x] 6.1 Detector script + 5-minute scheduled task on DC01 (alerts file + event log) (24 Oct: installed by the deploy: event source, audit policy, failure SACLs on `_LABTEST` + `_ADMINS`, task Ready; no alerts from the 24 Oct run, as expected: 5 changes is not above the burst of 5, all inside the allowed OUs; but no 4662 failures appeared for the three refused writes, so D5 has nothing to fire on yet: check in 6.2)
 - [ ] 6.2 The five detections in SolutionDesign §9.4, each proven by a staged event
 
 ### Phase 7: Red-team campaign (v1, no policy in the server)
@@ -135,3 +135,4 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 | 21 Oct 2026 | Phase 1: SolutionDesign v0.1 → v1.0 (D1–D15). Phase 2: repo, CLAUDE.md, this plan, FINDINGS.md, empty server + stdio check (0 tools, mutation-tested). Next: Phase 0 at the laptop, then Phase 3 |
 | 22 Oct 2026 | Phase 0 run: 0.1–0.4 PASS; CLIENT01 admin part (RSAT, Python, Git, `C:\ADAgent`, stdio ok) done. F-00 found and fixed (the agent identity inherited the Claude account's connectors and plugins; admin-only managed settings). C: fell from 21 to 2.8 GB (CLIENT01 wrote 11.6 GB in 2 h, plus RAM-sized `.VMRS` files): VMs set to AutomaticStopAction ShutDown + Production checkpoints. 0.7 `pre-build` taken with both VMs off. **Phase 0 done.** Lean cut agreed (D16: 4 read + 3 change tools, 13 campaign tests). Next: Phase 3, `ad_whoami`. Two script bugs fixed on the way: `ActiveDirectoryAuditRule` needs typed args (string args hit two constructors), and 5136 lands ~9 s after the change, so the proof polls instead of one 5 s check (found with two PowerShell Direct diagnostics). Phase 0 scripted: `lab\phase0-host.ps1`, `lab\phase0-dc01.ps1`, `lab\phase0-client01.ps1` (all parse-checked) + `operator\.mcp.json` (launches admcp from `C:\ADAgent\.venv`). Ken runs them in order |
 | 24 Oct 2026 | Phase 3 + 4 code written on the host: `admcp/runner.py` (JSON on stdin to one fixed `.ps1`, errors verbatim, 200-row cap, refused calls logged as `rejected`), `admcp/calllog.py` (JSON lines + Application event log; message via env var, never the command line), 4 read tools in `server.py` + `scripts/ad_whoami.ps1`, `ad_search_users.ps1`, `ad_get_group_members.ps1` (each validates again; the name pattern has no quotes, so it cannot break out of the AD filter). `tests/check_server.py` = 4 tools ok; new `tests/check_runner.py` (stub scripts, no domain) ok; 4 of 4 mutants caught; every `.ps1` parses. Phase 4: `lab/setup-lab.ps1` (dsacls grants, idempotent) + `lab/test-delegation.ps1`. Design note for the campaign: write on `userAccountControl` is the whole flag word (DONT_REQ_PREAUTH, PASSWD_NOTREQD too), not just disable. Next: Copy-VMFile to CLIENT01, `setup-lab.ps1 -Part Delegation` on DC01 and `-Part EventSource` on CLIENT01, then each tool's happy + denial run with DC01's Security log |
+| 24 Oct 2026 (evening) | Phase 3 + 4 + 5 tools run on CLIENT01 as `ai-operator`. Deploy needed three fixes on the way: the SDK only passes a `ToolError`'s text to the agent (runner's ToolError now subclasses it, `check_runner` asserts it); C: filled and both VMs went PausedCritical (caches cleared, hibernation off, 8.6 GB free); DC01's DHCP started before AD and stopped serving after failing its authorization check (event 1046), so CLIENT01 sat on 169.254.x (`db49c61`: delayed start + restart on 1046). Then: delegation matrix 6/6 PASS; every tool's happy + refused/AD-error call as expected; 16 calls in both logs; DC01 Security log shows each change by ai-operator; `lab-inside` restored. New finding F-01 (caller from environment variables), fixed in `4519c47`. Next: redeploy, CLIENT01 re-run, 5.8 (Claude Code as ai-operator), 6.2 |

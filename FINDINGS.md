@@ -19,6 +19,7 @@ Tags: OWASP LLM Top 10 (LLM01, LLM06), OWASP Agentic Top 10 (ASI01–ASI10), MIT
 | ID | Test | Version | Stopped by | Detected | Status | Tags |
 |---|---|---|---|---|---|---|
 | F-00 | Setup (Phase 0, 22 Oct): sign `ai-operator` in to Claude Code | v0 | Nothing: found by reading `/mcp` | No | Fixed 22 Oct, re-tested (`/mcp`: admcp only) | LLM06, ASI03, ATT&CK T1078 |
+| F-01 | Phase 3 run (24 Oct): who does the call log say made each call? | v1 | Nothing: found by reading `ad_whoami` | DC01's own log names the real account | Fixed 24 Oct (`4519c47`), host re-test ok, CLIENT01 re-run pending | ASI03 |
 
 ## F-00: the agent identity inherited my whole Claude account
 
@@ -42,3 +43,21 @@ Tags: OWASP LLM Top 10 (LLM01, LLM06), OWASP Agentic Top 10 (ASI01–ASI10), MIT
 
 Lesson for the write-up: an agent's permissions are the union of its directory rights **and** every tool its model
 account carries. Scope the account, not just the AD identity.
+
+## F-01: the call log's "caller" came from environment variables
+
+1. **What happened.** On the first CLIENT01 run as `KENLAB\ai-operator`, `ad_whoami` reported the account as
+   `\ai-operator` and every call-log entry said `caller: ai-operator`, with no domain. The server built the caller from
+   `USERDOMAIN` and `USERNAME`, and the MCP stdio client hands a server only a short list of environment variables
+   (`USERDOMAIN` is not on it). The bigger problem: those variables belong to whoever starts the server, so a `.mcp.json`
+   `env` block or a wrapper could put any name in the audit log. `ad_whoami.ps1` also looked the account up by
+   `$env:USERNAME`, so it could describe a different user's groups than the token actually holds.
+2. **What should have stopped it.** The design said the log records who called (SolutionDesign §5.1), but did not say
+   where that name comes from. It has to come from the process's Windows token, which the launcher can't change.
+3. **Detection.** Partly: DC01's Security log names the account that really made each change (4725/4728/4767/5136
+   "by ai-operator"), so a forged caller on CLIENT01 would disagree with DC01. That is the record to trust.
+4. **Fix and re-test.** `admcp/server.py` takes `DOMAIN\user` from `GetUserNameExW` (the token) and refuses to start
+   without it; `ad_whoami.ps1` uses `WindowsIdentity.GetCurrent()` and looks the account up by SID.
+   `tests/check_server.py` now starts the server with `USERNAME`/`USERDOMAIN` forged and asserts the logged caller is
+   the real logon: ok on the host (`DESKTOP-22M3C3P\admin`); the old env-based code fails it (logged
+   `FORGED\forged-user`). CLIENT01 re-run as `ai-operator`: pending.
