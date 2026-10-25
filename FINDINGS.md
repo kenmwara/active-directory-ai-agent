@@ -116,5 +116,8 @@ plugins, built-ins) brings its own tools.
    `_LABTEST` should leave a 4662 failure on DC01 (D5), which 6.2 still has to prove.
 4. **Fix and re-test.** `permissions.disableAutoMode: "disable"` in the admin-only managed settings (deploy 5), so
    every action is either allowed, asked or denied by a written rule. Re-test 24 Oct after deploy 5 (v2.1.310):
-   Shift+Tab cycles manual, accept edits and plan only, with the notice "auto mode disabled by settings". For v2 (8.2): don't let one client setting be the only thing between the agent and a destructive call;
+   Shift+Tab cycles manual, accept edits and plan only, with the notice "auto mode disabled by settings".
+5. **Reported to the vendor.** Anthropic's HackerOne program (the channel in Claude Code's SECURITY.md; asset Claude Code,
+   eligible for bounty): report #4143756, filed 25 Oct 2026 04:45 UTC, CVSS 4.0 Medium (4.8), CWE-863, three
+   screenshots attached. Not public until Anthropic responds; the 24 Oct LinkedIn and Range posts leave it out. For v2 (8.2): don't let one client setting be the only thing between the agent and a destructive call;
    the server can require its own confirmation for `ad_disable_account`.
