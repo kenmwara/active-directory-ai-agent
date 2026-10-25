@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__admcp__ad_whoami",
+      "mcp__admcp__admcp_my_tool_calls",
+      "mcp__admcp__ad_search_users",
+      "mcp__admcp__ad_get_group_members",
+      "mcp__admcp__ad_unlock_account",
+      "mcp__admcp__ad_add_group_member"
+    ],
+    "ask": ["mcp__admcp__ad_disable_account"],
+    "deny": ["Bash", "PowerShell", "Write", "Edit", "NotebookEdit", "WebFetch", "WebSearch"]
+  }
+}

@@ -1,9 +1,9 @@
 """admcp server (stdio): the KENLAB Active Directory agent tools.
 
-v1 read-only tools (PhasedSolutionPlan.md Phase 3, the D16 lean cut): ad_whoami, admcp_my_tool_calls, ad_search_users,
-ad_get_group_members. Each AD tool runs one fixed PowerShell script through runner.py and is recorded in the call log.
-No policy lives in the server in v1 (D9): the server only validates input shape. The change and destructive tools
-(ad_unlock_account, ad_add_group_member, ad_disable_account) arrive in Phase 5.
+v1 tools (the D16 lean cut): read-only ad_whoami, admcp_my_tool_calls, ad_search_users, ad_get_group_members (Phase 3);
+change tools ad_unlock_account, ad_add_group_member and the one destructive tool, ad_disable_account (Phase 5). Each AD
+tool runs one fixed PowerShell script through runner.py and is recorded in the call log. No policy lives in the server
+in v1 (D9): the server only validates input shape; AD delegation and Claude Code's confirmation prompt are the limits.
 """
 import os
 import re
@@ -60,6 +60,43 @@ def ad_get_group_members(group: str) -> dict:
     if not _GROUP.match(group):
         reject("ad_get_group_members", args, CALLER, "group name has characters that are not allowed")
     return run_script("ad_get_group_members", args, CALLER)
+
+
+_ACCOUNT = re.compile(r"^[A-Za-z0-9._-]{1,64}$")   # a sAMAccountName
+
+
+@server.tool(description=(
+    "Unlock one locked user account. CHANGES something. Needs write lockoutTime on the user, delegated only on users "
+    "under OU=_USERS; elsewhere AD refuses and its error is returned as is. 'user' is the sAMAccountName."))
+def ad_unlock_account(user: str) -> dict:
+    args = {"user": user}
+    if not _ACCOUNT.match(user):
+        reject("ad_unlock_account", args, CALLER, "user name has characters that are not allowed")
+    return run_script("ad_unlock_account", args, CALLER)
+
+
+@server.tool(description=(
+    "Add one user to one group. CHANGES something. Needs write member on the group, delegated only on groups in "
+    "OU=Groups; elsewhere AD refuses and its error is returned as is. 'group' is the group name, 'user' the "
+    "sAMAccountName."))
+def ad_add_group_member(group: str, user: str) -> dict:
+    args = {"group": group, "user": user}
+    if not _GROUP.match(group):
+        reject("ad_add_group_member", args, CALLER, "group name has characters that are not allowed")
+    if not _ACCOUNT.match(user):
+        reject("ad_add_group_member", args, CALLER, "user name has characters that are not allowed")
+    return run_script("ad_add_group_member", args, CALLER)
+
+
+@server.tool(description=(
+    "Disable one user account. DESTRUCTIVE: the user cannot sign in until an administrator re-enables it, so a person "
+    "confirms every call. Needs write userAccountControl on the user, delegated only on users under OU=_USERS; "
+    "elsewhere AD refuses and its error is returned as is. 'user' is the sAMAccountName."))
+def ad_disable_account(user: str) -> dict:
+    args = {"user": user}
+    if not _ACCOUNT.match(user):
+        reject("ad_disable_account", args, CALLER, "user name has characters that are not allowed")
+    return run_script("ad_disable_account", args, CALLER)
 
 
 def main() -> None:

@@ -9,11 +9,15 @@ Asks once for KENLAB\a-kkariuki in the Windows credential box: typed by Ken, nev
 param([ValidateSet('Deploy', 'Evidence')][string]$Step = 'Deploy')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
+# DC01 first (CLIENT01 needs the domain), each until its integration heartbeat reports the guest up
 foreach ($vm in 'DC01', 'CLIENT01') {
+    if ((Get-VM $vm).State -ne 'Running') { "starting $vm ..."; Start-VM -Name $vm }
+    foreach ($i in 1..60) { if ((Get-VM $vm).Heartbeat -like 'Ok*') { break }; Start-Sleep 5 }
     $v = Get-VM $vm
-    if ($v.State -ne 'Running') { throw "$vm is $($v.State): start it and wait for it to boot" }
+    if ($v.Heartbeat -notlike 'Ok*') { throw "$vm did not come up within 5 minutes (heartbeat: $($v.Heartbeat))" }
     "$vm running, heartbeat: $($v.Heartbeat)"
 }
+Start-Sleep 30   # AD Web Services on DC01 start a little after the heartbeat
 $cred = Get-Credential -UserName 'KENLAB\a-kkariuki' -Message 'Domain admin for DC01 and CLIENT01 (PowerShell Direct). Not stored.'
 
 if ($Step -eq 'Deploy') {
@@ -27,6 +31,7 @@ if ($Step -eq 'Deploy') {
 
     "`n== DC01: 4.1 delegation, layout, out-of-scope test objects"
     $dc = Invoke-Command -VMName DC01 -Credential $cred -ScriptBlock {
+        Get-Service ADWS, NTDS, DNS, Netlogon | ForEach-Object { "service $($_.Name): $($_.Status)" }
         & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\setup-lab.ps1 -Part Delegation
         & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\phase4-dc01.ps1
     }
@@ -39,6 +44,16 @@ if ($Step -eq 'Deploy') {
     Invoke-Command -VMName CLIENT01 -Credential $cred -ArgumentList $zip.Name, $targetsJson -ScriptBlock {
         param($zipName, $targetsJson)
         $App = 'C:\ADAgent'
+        # 24 Oct: CLIENT01 booted before DC01, so the AD module found no DC ("Unable to find a default server with Active
+        # Directory Web Services running"). Find one now; if that fails, flush DNS, restart Netlogon and try again.
+        $loc = nltest /dsgetdc:ad.kenmwara.com /ws /force 2>&1 | Out-String
+        if ($loc -notmatch 'DC: \\\\') {
+            "DC locator failed, retrying after flushdns + Netlogon restart:`n$loc"
+            ipconfig /flushdns | Out-Null; Restart-Service Netlogon; Start-Sleep 10
+            $loc = nltest /dsgetdc:ad.kenmwara.com /ws /force 2>&1 | Out-String
+        }
+        "DC locator: " + (($loc -split "`r?`n" | Where-Object { $_ -match 'DC:|Address:|Flags:' }) -join ' | ')
+        "ADWS port 9389 on DC01 reachable: " + (Test-NetConnection DC01 -Port 9389 -WarningAction SilentlyContinue).TcpTestSucceeded
         Expand-Archive -Path "C:\Lab\$zipName" -DestinationPath $App -Force
         # admins change the code; everyone else (ai-operator included) can only read and run it
         icacls $App /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-545:(OI)(CI)RX' | Out-Null
@@ -49,6 +64,28 @@ if ($Step -eq 'Deploy') {
             & "$App\.venv\Scripts\python.exe" tests\check_runner.py
         } finally { Pop-Location }
         & powershell -NoProfile -ExecutionPolicy Bypass -File "$App\lab\setup-lab.ps1" -Part EventSource
+        # 5.8: Claude Code managed settings (admin-only file, so neither ai-operator nor the agent can loosen them).
+        # Phase 0 keys stay; added: shells and file writes denied, the destructive tool always asks, no bypass mode,
+        # and defaultMode pinned to "default" so auto mode can't skip the ask rule.
+        $managed = 'C:\Program Files\ClaudeCode'
+        New-Item -ItemType Directory -Force -Path $managed | Out-Null
+        $json = @'
+{
+  "disableClaudeAiConnectors": true,
+  "syncClaudeAiPlugins": false,
+  "syncClaudeAiSkills": false,
+  "enabledMcpjsonServers": ["admcp"],
+  "permissions": {
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable",
+    "ask": ["mcp__admcp__ad_disable_account"],
+    "deny": ["Read(~/.claude/**)", "Bash", "PowerShell", "Write", "Edit", "NotebookEdit", "WebFetch", "WebSearch"],
+    "blockReadsOutsideWorkingDirectories": true
+  }
+}
+'@
+        [IO.File]::WriteAllText("$managed\managed-settings.json", $json)   # UTF-8 without BOM; a BOM breaks JSON parsing
+        "managed-settings.json written (deny shells + writes, ask before ad_disable_account, no bypass)"
         $out = 'C:\Users\Public\Documents\admcp'
         New-Item -ItemType Directory -Force -Path $out | Out-Null
         icacls $out /grant '*S-1-5-32-545:(OI)(CI)M' | Out-Null   # ai-operator writes its report here
@@ -67,9 +104,15 @@ Invoke-Command -VMName CLIENT01 -Credential $cred -ScriptBlock {
     Get-WinEvent -FilterHashtable @{ LogName = 'Application'; ProviderName = 'admcp' } -MaxEvents 12 -ErrorAction SilentlyContinue |
         ForEach-Object { '{0:HH:mm:ss}  {1}' -f $_.TimeCreated, $_.Message.Substring(0, [math]::Min(170, $_.Message.Length)) }
 }
-"`n== DC01 Security log, last 2 hours"
+"`n== DC01 Security log, last 2 hours (then the test objects are put back)"
 Invoke-Command -VMName DC01 -Credential $cred -ScriptBlock {
     $since = (Get-Date).AddHours(-2)
+    # put the change-tool targets back: lab-inside enabled and out of the test group; the real users the matrix touched
+    Enable-ADAccount 'lab-inside'
+    foreach ($g in 'Finance', 'IT', 'HR') {
+        if (Get-ADGroupMember $g | Where-Object SamAccountName -eq 'lab-inside') { Remove-ADGroupMember $g -Members 'lab-inside' -Confirm:$false; "removed lab-inside from $g" }
+    }
+    "lab-inside enabled: " + (Get-ADUser 'lab-inside').Enabled
     $ids = 4624, 4625, 4768, 4769, 4738, 4740, 4767, 4725, 4722, 4728, 4729, 4756, 4757, 5136, 4662
     Get-WinEvent -FilterHashtable @{ LogName = 'Security'; StartTime = $since; Id = $ids } -ErrorAction SilentlyContinue |
         Where-Object { $_.Message -match 'ai-operator' } | Group-Object Id |

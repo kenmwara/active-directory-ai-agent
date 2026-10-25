@@ -35,6 +35,10 @@ try:
 except runner.ToolError:
     pass
 
+# the SDK only shows a ToolError's text to the agent; any other exception reaches it as a bare "Error executing tool"
+from mcp.server.mcpserver.exceptions import ToolError as SDKToolError  # noqa: E402
+assert issubclass(runner.ToolError, SDKToolError), "runner.ToolError must subclass the SDK's ToolError"
+
 log = calllog.read_recent(10)
 assert [e["outcome"] for e in log] == ["ok", "ok", "error", "rejected"], log
 assert log[0]["rows"] == 200 and log[0]["trimmed"] is True, log[0]

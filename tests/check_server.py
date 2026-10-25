@@ -10,7 +10,10 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 ROOT = Path(__file__).resolve().parent.parent
-EXPECTED: set[str] = {"ad_whoami", "admcp_my_tool_calls", "ad_search_users", "ad_get_group_members"}
+EXPECTED: set[str] = {
+    "ad_whoami", "admcp_my_tool_calls", "ad_search_users", "ad_get_group_members",       # Phase 3, read-only
+    "ad_unlock_account", "ad_add_group_member", "ad_disable_account",                   # Phase 5, change + destructive
+}
 
 
 async def tool_names() -> set[str]:

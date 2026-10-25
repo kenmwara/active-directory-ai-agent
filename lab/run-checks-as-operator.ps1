@@ -8,12 +8,16 @@ $out = 'C:\Users\Public\Documents\admcp'
 $t = Get-Content "$out\targets.json" -Raw | ConvertFrom-Json
 & {
     "== whoami: $(whoami)   start $(Get-Date -Format o)"
+    "== DC locator (needs a DC running AD Web Services)"
+    nltest /dsgetdc:ad.kenmwara.com /ws 2>&1 | Out-String
     "== 4.2 delegation matrix (InUser=$($t.InUser) Member=$($t.Member) InGroup=$($t.InGroup) OutUser=$($t.OutUser) OutGroup=$($t.OutGroup))"
     & "$PSScriptRoot\test-delegation.ps1" -InUser $t.InUser -OutUser $t.OutUser -InGroup $t.InGroup -OutGroup $t.OutGroup -Member $t.Member |
         Out-String -Width 250
     "== 3.x tools over stdio"
     Push-Location 'C:\ADAgent'
-    try { & 'C:\ADAgent\.venv\Scripts\python.exe' tests\run_tools.py $t.InGroup 2>&1 | Out-String -Width 250 } finally { Pop-Location }
+    # Continue: a native program's stderr must not stop the run (the server's own log goes to run_tools.server.log)
+    $ErrorActionPreference = 'Continue'
+    try { & 'C:\ADAgent\.venv\Scripts\python.exe' tests\run_tools.py "$out\targets.json" 2>&1 | Out-String -Width 250 } finally { Pop-Location }
     "== end $(Get-Date -Format o)"
 } *>&1 | Tee-Object -FilePath "$out\phase34-report.txt"
 "report written: $out\phase34-report.txt"

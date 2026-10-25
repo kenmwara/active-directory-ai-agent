@@ -11,6 +11,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from mcp.server.mcpserver.exceptions import ToolError as _SDKToolError
+
 from . import calllog
 
 SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
@@ -18,8 +20,11 @@ ROW_CAP = 200
 TIMEOUT_S = 60
 
 
-class ToolError(Exception):
-    """A tool failed. The message is the AD or validation error, verbatim; the server surfaces it to the agent."""
+class ToolError(_SDKToolError):
+    """A tool failed. The message is the AD or validation error, verbatim.
+
+    It must subclass the SDK's ToolError: the SDK passes a ToolError's text to the agent ("Error executing tool <name>:
+    <text>") but treats any other exception as a crash and hides its text (found on CLIENT01, 24 Oct)."""
 
 
 def log_call(tool: str, args: dict, caller: str, outcome: str, error: str = "", duration_s: float = 0.0,
