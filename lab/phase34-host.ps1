@@ -24,15 +24,16 @@ if ($Step -eq 'Deploy') {
     $zip = Get-ChildItem "$repo\dist\admcp-*.zip" | Sort-Object LastWriteTime | Select-Object -Last 1
     if (-not $zip) { throw "No dist\admcp-*.zip in $repo" }
     Copy-VMFile -Name CLIENT01 -SourcePath $zip.FullName -DestinationPath "C:\Lab\$($zip.Name)" -CreateFullPath -FileSource Host -Force
-    foreach ($f in 'setup-lab.ps1', 'phase4-dc01.ps1') {
+    foreach ($f in 'setup-lab.ps1', 'phase4-dc01.ps1', 'detector.ps1', 'setup-detector.ps1') {
         Copy-VMFile -Name DC01 -SourcePath "$repo\lab\$f" -DestinationPath "C:\Lab\$f" -CreateFullPath -FileSource Host -Force
     }
-    "copied $($zip.Name) -> CLIENT01, setup-lab.ps1 + phase4-dc01.ps1 -> DC01"
+    "copied $($zip.Name) -> CLIENT01; setup-lab, phase4-dc01, detector, setup-detector -> DC01"
 
     "`n== DC01: 4.1 delegation, layout, out-of-scope test objects"
     $dc = Invoke-Command -VMName DC01 -Credential $cred -ScriptBlock {
         Get-Service ADWS, NTDS, DNS, Netlogon | ForEach-Object { "service $($_.Name): $($_.Status)" }
         & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\setup-lab.ps1 -Part Delegation
+        & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\setup-detector.ps1 | ForEach-Object { "detector setup: $_" }
         & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Lab\phase4-dc01.ps1
     }
     $dc
