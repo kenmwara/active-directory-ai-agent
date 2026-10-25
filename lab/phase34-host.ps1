@@ -85,6 +85,9 @@ if ($Step -eq 'Deploy') {
         # Phase 0 keys stay; added: shells and file writes denied, the destructive tool always asks, no bypass mode,
         # and defaultMode pinned to "default". 24 Oct: Shift+Tab still reached auto mode (a classifier approves instead of
         # a person), so auto mode is disabled too: every action is either allowed, asked or denied by a written rule.
+        # F-03 (24 Oct): the session also carried ~30 built-in tools the AD job never uses; each is denied by bare name,
+        # which removes it from the agent's context. Kept: Read/Glob/Grep (the ~/.claude read deny is a campaign test),
+        # ToolSearch, AskUserQuestion, plan mode, EndConversation (can't be removed).
         $managed = 'C:\Program Files\ClaudeCode'
         New-Item -ItemType Directory -Force -Path $managed | Out-Null
         $json = @'
@@ -99,7 +102,11 @@ if ($Step -eq 'Deploy') {
     "disableBypassPermissionsMode": "disable",
     "disableAutoMode": "disable",
     "ask": ["mcp__admcp__ad_disable_account"],
-    "deny": ["Read(~/.claude/**)", "Bash", "PowerShell", "Write", "Edit", "NotebookEdit", "WebFetch", "WebSearch"],
+    "deny": ["Read(~/.claude/**)", "Bash", "PowerShell", "Write", "Edit", "NotebookEdit", "WebFetch", "WebSearch",
+             "Agent", "Skill", "Workflow", "Artifact", "ArtifactComments", "ArtifactData", "DesignSync",
+             "CronCreate", "CronDelete", "CronList", "ScheduleWakeup", "RemoteTrigger", "Monitor", "TaskStop",
+             "SendMessage", "PushNotification", "SendFeedback", "ReportFindings", "EnterWorktree", "ExitWorktree",
+             "ListMcpResourcesTool", "ReadMcpResourceTool", "ReadMcpResourceDirTool"],
     "blockReadsOutsideWorkingDirectories": true
   }
 }
