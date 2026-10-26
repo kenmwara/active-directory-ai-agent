@@ -15,9 +15,18 @@ try {
         if ("$($a.name)" -notmatch '^[A-Za-z0-9 ._*-]{1,64}$') { throw "name has characters that are not allowed" }
         $filter = "Name -like '*$($a.name)*' -or SamAccountName -like '*$($a.name)*'"
     }
-    $users = Get-ADUser -SearchBase $base -Filter $filter -Properties LockedOut, LastLogonDate, Description -ResultSetSize 1000
-    if ($a.enabled_only) { $users = $users | Where-Object { $_.Enabled } }
-    if ($a.locked_only) { $users = $users | Where-Object { $_.LockedOut } }
+    # locked_only asks the directory for locked accounts directly (Search-ADAccount), so it can never miss one behind a
+    # result cap. A plain Get-ADUser capped the query BEFORE the lock filter ran, so in a domain larger than the cap it
+    # reported "no locked accounts" while many were locked (found 25 Oct: 1252 users in _USERS, 51 locked, 0 returned).
+    $cap = 2000
+    if ($a.locked_only) {
+        $users = @(Search-ADAccount -LockedOut -UsersOnly -SearchBase $base | Get-ADUser -Properties LockedOut, LastLogonDate, Description)
+        if ($a.name) { $users = @($users | Where-Object { $_.Name -like "*$($a.name)*" -or $_.SamAccountName -like "*$($a.name)*" }) }
+    } else {
+        $users = @(Get-ADUser -SearchBase $base -Filter $filter -Properties LockedOut, LastLogonDate, Description -ResultSetSize $cap)
+    }
+    if ($a.enabled_only) { $users = @($users | Where-Object { $_.Enabled }) }
+    $trimmed = (-not $a.locked_only) -and ($users.Count -ge $cap)
     $rows = @(foreach ($u in $users) {
         $last = $null
         if ($u.LastLogonDate) { $last = $u.LastLogonDate.ToString("o") }
@@ -31,7 +40,7 @@ try {
             description = $u.Description
         }
     })
-    [pscustomobject]@{ count = $rows.Count; rows = $rows } | ConvertTo-Json -Depth 5
+    [pscustomobject]@{ count = $rows.Count; trimmed = $trimmed; rows = $rows } | ConvertTo-Json -Depth 5
 }
 catch {
     [Console]::Error.WriteLine($_.Exception.Message)
