@@ -8,3 +8,6 @@ dist/
 
 # Phase 7 planted injection texts stay local (user-authored)
 lab/planted.txt
+
+# per-test evidence pulls stay local
+evidence/
