@@ -83,8 +83,8 @@ if ($Step -eq 'Deploy') {
         & powershell -NoProfile -ExecutionPolicy Bypass -File "$App\lab\setup-lab.ps1" -Part EventSource
         # 5.8: Claude Code managed settings (admin-only file, so neither ai-operator nor the agent can loosen them).
         # Phase 0 keys stay; added: shells and file writes denied, the destructive tool always asks, no bypass mode,
-        # and defaultMode pinned to "default". 24 Oct: Shift+Tab still reached auto mode (a classifier approves instead of
-        # a person), so auto mode is disabled too: every action is either allowed, asked or denied by a written rule.
+        # and defaultMode pinned to "default". Auto mode is disabled too (a classifier approves instead of a person):
+        # every action is either allowed, asked or denied by a written rule.
         # F-03 (24 Oct): the session also carried ~30 built-in tools the AD job never uses; each is denied by bare name,
         # which removes it from the agent's context. Kept: Read/Glob/Grep (the ~/.claude read deny is a campaign test),
         # ToolSearch, AskUserQuestion, plan mode, EndConversation (can't be removed).
