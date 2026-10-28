@@ -74,8 +74,6 @@ Demo video: [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7519
 ## Credits
 
 The build process (design document, CLAUDE.md, phased plan with start, plan and close prompts) follows Josh Madakor's
-agentic coding guide. Raymond Gonsalves pointed the project at AI security from the start (secure the agent rather than
-showcase it, and test indirect injection) and reviewed this repository on 28 Oct 2026; the security-first framing, the recruiter brief and
-the results-first layout are his suggestions.
+agentic coding guide. Thanks to Raymond Gonsalves for reviewing this repository.
 
 *Lab only: every account here lives on an isolated lab network on one laptop. Nothing touches a production system.*

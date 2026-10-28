@@ -260,7 +260,7 @@ D1–D4 are in section 4.1. The design questions Q1–Q10 were resolved on Ken's
 
 | # | Decision |
 |---|---|
-| D5 (Q1) | The server is `admcp`; the repo is `kenmwara/active-directory-ai-agent`, next to `active-directory-lab` (renamed `securing-ai-agents-ad` on 28 Oct 2026 after Raymond Gonsalves's review) |
+| D5 (Q1) | The server is `admcp`; the repo is `kenmwara/active-directory-ai-agent`, next to `active-directory-lab` (renamed `securing-ai-agents-ad` on 28 Oct 2026) |
 | D6 (Q2) | `gpo_set_security_filter` may touch only the "Finance Drive Map" GPO |
 | D7 (Q3) | `gpo_link` may target only `Workstations` and `_USERS\IT`, `\Finance`, `\HR`; never the domain root or Domain Controllers |
 | D8 (Q4) | `ad_move_object` moves users between `_USERS\IT`, `\Finance` and `\HR` only |
