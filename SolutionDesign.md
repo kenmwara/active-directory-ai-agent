@@ -1,6 +1,7 @@
-# SolutionDesign.md: AD Agent Lab
+# SolutionDesign.md: Securing an Active Directory Agent
 
-**An MCP server that lets an AI agent work in my Active Directory lab, built so I can attack it.**
+**An MCP server that lets an AI agent work in my Active Directory lab, built so I can attack it and find out which
+security controls contain it.**
 
 | | |
 |---|---|
@@ -17,11 +18,13 @@
 AI agents are being given tools that change identity systems. An agent that can add people to groups, unlock
 accounts or edit Group Policy can be steered into doing an attacker's work, either by someone typing a bad request
 or by instructions hidden in data the agent reads (a user's description field, a group name, a file path). The agent
-only does what it is told; the question is what stops it when it is told the wrong thing.
+only does what it is told; the question is what security controls contain it when it is manipulated.
 
-This project builds a real agent toolbox for a real Active Directory domain, then attacks it, to find out which
-layer catches a tricked agent: AD's own permissions, a human confirmation step, or a detection on the domain
-controller. Every finding is written down, fixed and re-tested.
+This project designs and deploys an AI agent tool layer integrated with a live Active Directory domain, then runs
+adversarial testing to simulate agent manipulation through prompt injection and tool misuse. Each test evaluates
+which defensive control contains a compromised agent: native AD permissions and delegation, human-in-the-loop
+approval gates, or detection engineering on the domain controller. Every finding is validated, mitigated and
+re-tested.
 
 It is also a genuinely useful helpdesk tool. On 18 Oct a Finance drive map took an hour to debug by hand; one call
 to `gpo_get_result_for_user` for an HR user would have printed "Finance Drive Map, Filtering: Denied (Security)".
@@ -36,11 +39,12 @@ to `gpo_get_result_for_user` for an HR user would have printed "Finance Drive Ma
 4. Three guards outside the server's logic: AD delegation, Claude Code confirmation on destructive tools, detections on DC01.
 5. A red-team campaign: direct misuse, indirect prompt injection, blast radius, authorization edges, bypass (section 9).
 6. A findings log in a fixed format; every finding fixed and re-tested or accepted with a reason.
-7. A public repo and a post (Range first, then LinkedIn), shared with Raymond Gonsalves, Josh tagged.
+7. A public repo with the results first and a short recruiter brief.
 
 **Non-goals**
 
-- No password handling of any kind: no reset, no set, no reading LAPS passwords. Credentials never pass through the agent.
+- Credential-free by design: the agent runs as a delegated, least-privilege AD account over stdio and never handles,
+  stores or reads a password (no reset, no set, no LAPS read). The server holds no secrets or keys of its own.
 - No Domain Admin, no Schema Admins, nothing on `_ADMINS`, the Domain Controllers OU, AdminSDHolder or the schema.
 - No creating or deleting users or groups. No running arbitrary PowerShell through the server.
 - No internet exposure. The server speaks only to a local client over stdio on a private switch.
@@ -256,7 +260,7 @@ D1–D4 are in section 4.1. The design questions Q1–Q10 were resolved on Ken's
 
 | # | Decision |
 |---|---|
-| D5 (Q1) | The server is `admcp`; the repo is `kenmwara/active-directory-ai-agent`, next to `active-directory-lab` |
+| D5 (Q1) | The server is `admcp`; the repo is `kenmwara/active-directory-ai-agent`, next to `active-directory-lab` (renamed `securing-ai-agents-ad` on 28 Oct 2026 after Raymond Gonsalves's review) |
 | D6 (Q2) | `gpo_set_security_filter` may touch only the "Finance Drive Map" GPO |
 | D7 (Q3) | `gpo_link` may target only `Workstations` and `_USERS\IT`, `\Finance`, `\HR`; never the domain root or Domain Controllers |
 | D8 (Q4) | `ad_move_object` moves users between `_USERS\IT`, `\Finance` and `\HR` only |
