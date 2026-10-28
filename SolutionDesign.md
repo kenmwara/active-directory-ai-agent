@@ -65,6 +65,10 @@ One user: Ken, driving Claude Code on CLIENT01.
 
 ## 4. Architecture
 
+<img src="images/architecture.png" width="100%" alt="Architecture diagram: CLIENT01 runs Claude Code as KENLAB\ai-operator, which starts the admcp MCP server over stdio; admcp runs one fixed PowerShell script per tool and reaches DC01 over AD Web Services (TCP 9389) as ai-operator. DC01 enforces AD delegation, records every change in its Security log, and a detector task reads it every 5 minutes. Three guards: AD decides what it may touch, a person approves what it cannot undo, the DC keeps its own record.">
+
+Where each piece runs and how the pieces talk. The call-by-call detail is in 4.2 and what runs on each box in 4.3.
+
 ### 4.1 Decided 21 Oct 2026 (Ken: "Go on all 4 of your recommendations")
 
 | # | Decision | Why |
