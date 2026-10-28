@@ -119,7 +119,7 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
 - [ ] 9.1 README rewritten for the public, screenshots, the findings summary; scrub check (no passwords, no LAPS output, no tokens)
 - [ ] 9.2 Repo public (D14); added to the cyber-range README index and the portfolio
-- [ ] 9.3 The Range post first, then LinkedIn (hook image + the campaign video in both); send it to Raymond Gonsalves, tag Josh Madakor
+- [ ] 9.3 The Range post first, then LinkedIn (hook image + the campaign video in both)
 
 ### Phase 10: Break-the-agent lab for Range members (Ken's idea, 24 Oct; starts after Phase 8)
 
