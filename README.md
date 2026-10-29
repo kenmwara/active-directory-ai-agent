@@ -12,6 +12,16 @@ Active Directory delegation, a human approval gate, or detection on the domain c
 change the agent's behaviour, privileged requests were refused or denied by the directory, and every out-of-scope
 write was detected. One gap remains open: high-volume changes within the agent's rights are detected but not blocked.
 
+## Key takeaways
+
+| | |
+|---|---|
+| **0 of 3** | **Injection never moved the agent.** Instructions planted in a user, a group and a Base64 payload were treated as data. |
+| **3 of 3** | **Privilege requests refused.** Domain Admins, the built-in Administrator and Backup Operators were refused before any tool call. |
+| **100%** | **Out-of-scope writes detected.** Every write outside the two delegated OUs raised an alert on the domain controller. |
+| **8** | **Configuration findings remediated before testing**, each re-tested; one withheld pending vendor resolution. |
+| **1** | **Gap still open.** High-volume changes within the agent's rights are detected, not blocked; v2 adds an in-server cap. |
+
 <img src="images/flow.png" width="100%" alt="Flow diagram in five steps. 1: IT staff ask in plain English, for example 'Unlock jsmith's account'. 2: the AI agent, Claude Code on the helpdesk PC signed in as its own low-privilege account, picks a tool. 3: the MCP server runs it; only 7 approved AD tools, no shell, no file writes. 4: Active Directory decides; the change goes through only if the agent's rights allow it. 5: every action is recorded; the domain controller logs it and a detector alerts on anything suspicious. Guards: at step 3 it can only call the 7 tools it was given; at step 4 rights on two OUs, never an admin group; at step 5 the DC keeps its own record, not the agent's word.">
 
 **Status:** v1 assessment complete (13 of 13 tests, 25 Oct 2026). v2, which adds an in-server per-session change cap,
