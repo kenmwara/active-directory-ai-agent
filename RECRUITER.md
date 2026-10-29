@@ -6,37 +6,35 @@ A two-minute overview. Full technical detail: [README.md](README.md).
 
 ## Summary
 
-Organisations are beginning to give AI agents real permissions: unlocking accounts, changing group membership,
-disabling users. An agent with those rights can be manipulated into doing an attacker's work, through a malicious
-request or through instructions hidden in the data it reads.
+Companies are starting to give AI helpers real power over staff accounts: unlocking them, changing who belongs to
+which group, switching accounts off. A helper with that power can be tricked into doing an attacker's work, either by a
+bad request or by instructions hidden in something it reads.
 
-This project deployed such an agent with delegated rights in a live Active Directory domain, then assessed it with a
-13-test adversarial campaign (prompt injection, privilege escalation, excessive agency, control bypass) to answer one
-question: **when the agent is manipulated, which security control contains it?**
+This project gave one such helper a limited set of rights in a working Active Directory network (the system that holds
+a company's accounts), then tried 13 ways to make it misbehave: hidden commands, grabs for admin power, oversized changes
+and attempts to get around its limits. The question was simple: **when the AI is fooled, what stops it?**
 
 ---
 
 ## Approach
 
-The design does not rely on the model refusing bad requests, because the model is the component an attacker is trying
-to deceive. Three controls contain the agent regardless of the model's behaviour:
+The design doesn't count on the AI saying no, because the AI is exactly what an attacker tries to fool. Three safety
+layers hold however the AI behaves:
 
-- **Permissions.** The agent's account is delegated rights on two areas of the directory only, enforced by Active
-  Directory.
-- **Human approval.** The one irreversible action requires confirmation from a person.
-- **Independent detection.** The domain controller audits every change and alerts on suspicious patterns from its own
-  logs, not the agent's.
+- **Limited rights.** The helper's account can only touch two areas of the directory, and Active Directory enforces it.
+- **A person approves.** The one change that can't be undone (switching an account off) waits for a person to say yes.
+- **Its own record.** The server logs every change and raises an alert on anything suspicious, using its own log, not the AI's word.
 
 ---
 
 ## Results
 
-- **Prompt injection was ineffective.** Three injection attempts, including an encoded "make admin" command, were
-  treated as data. No action was taken.
-- **Out-of-scope changes were denied by the directory**, and the corresponding detection fired.
-- **One gap remains open: volume.** Requests to unlock 51 accounts and to add 200 users fell within the agent's rights
-  and executed. Detection flagged both but did not block them. Version 2 adds a per-session change limit.
-- **Eight configuration weaknesses** were identified, remediated and re-tested before the campaign began.
+- **Hidden commands never worked.** Three attempts, including a disguised "make me admin" command, were treated as plain
+  text. Nothing happened.
+- **Changes outside its area were refused** by Active Directory, and the matching alert went off.
+- **One gap is still open: too many changes at once.** Requests to unlock 51 accounts and to add 200 users were within
+  its rights, so they went through. Alerts caught both but didn't stop them. Version 2 adds a limit per session.
+- **Eight setup weaknesses** were found, fixed and re-tested before the testing began.
 
 ---
 
