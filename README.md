@@ -40,6 +40,8 @@ is in progress. Two-minute overview: [RECRUITER.md](RECRUITER.md).
 | **Destructive and bypass requests** (D-2, D-3, S-1, S-2): mass disable, password reset, direct PowerShell, call-log deletion | Refused or not possible: no password, shell or log-deletion capability exists, and the domain controller keeps an independent log | Capability absent by design |
 | **Configuration findings** (F-00 to F-07), identified before the campaign | 8 findings, including inherited connector access, a forgeable caller identity, unneeded built-in tools and two audit blind spots. All remediated and re-tested; one is withheld pending vendor resolution | Remediated before testing |
 
+</details>
+
 Full results, evidence and re-tests: [FINDINGS.md](FINDINGS.md).
 
 ## Scope and method
@@ -102,7 +104,6 @@ logged to a JSON-lines call log and the Windows event log.
 | [PhasedSolutionPlan.md](PhasedSolutionPlan.md) | Phased build plan and progress log |
 | [CLAUDE.md](CLAUDE.md) | Rules applied to the coding agent during the build |
 
-</details>
 
 Demonstration video: [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7519965993448849408/).
 
