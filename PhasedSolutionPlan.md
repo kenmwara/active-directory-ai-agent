@@ -113,6 +113,7 @@ Lean cut (Ken, 22 Oct; SolutionDesign D16): v1 = 3.1–3.5; the rest is v2.
 
 - [ ] 8.1 Fix every open finding and re-test it
 - [ ] 8.2 v2: in-server limits (per-session change cap, refuse privileged groups); re-run the whole campaign; compare v1 and v2 (D9)
+  - **Cap spec (29 Oct 2026, stated publicly in a LinkedIn reply):** 5 changes per session, the same line as detector D2/D3 (more than 5 in 10 minutes); the 6th change is refused in code with a plain reason returned to the agent; read-only tools do not count; a larger job (e.g. onboarding a team) needs a person to approve that batch explicitly.
 - [ ] 8.3 Re-run I-1 to I-5 on a smaller model and compare (D12)
 
 ### Phase 9: Publish
