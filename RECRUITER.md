@@ -1,64 +1,61 @@
-# Securing an Active Directory Agent: Recruiter Brief
+# Securing an AI Agent in Active Directory: Recruiter Brief
 
-A two-minute overview of what I built and why it matters. The full technical detail is in [README.md](README.md).
-
----
-
-## What this project is
-
-Companies are starting to give AI agents real permissions: unlock accounts, change group membership, disable users.
-An agent like that can be talked into doing an attacker's work, either by a bad request or by instructions hidden in
-the data it reads.
-
-I built that agent on purpose. It runs with real rights in a live Active Directory domain (the identity system most
-companies use), and then I attacked it with prompt injection and misuse to answer one question: **when the agent is
-manipulated, which security control actually contains it?**
+A two-minute overview. Full technical detail: [README.md](README.md).
 
 ---
 
-## Why this matters
+## Summary
 
-Most AI security advice says "make the model refuse bad requests." The model is the one part an attacker is trying to
-fool, so this project doesn't rely on it. The agent is boxed in by three controls that work even if the model is
-tricked:
+Organisations are beginning to give AI agents real permissions: unlocking accounts, changing group membership,
+disabling users. An agent with those rights can be manipulated into doing an attacker's work, through a malicious
+request or through instructions hidden in the data it reads.
 
-- **Permissions.** The agent's account can only touch two areas of the directory, and the directory itself enforces
-  that.
-- **A human approval.** The one action that can't be undone asks a person first.
-- **Independent detection.** The domain controller logs every change and raises an alert on suspicious patterns,
-  using its own records rather than the agent's.
+This project deployed such an agent with delegated rights in a live Active Directory domain, then assessed it with a
+13-test adversarial campaign (prompt injection, privilege escalation, excessive agency, control bypass) to answer one
+question: **when the agent is manipulated, which security control contains it?**
 
 ---
 
-## What I found
+## Approach
 
-- **Hidden instructions didn't work.** Three injection attempts, including an encoded "make admin" command, were
-  treated as data. The agent ran nothing.
-- **Out-of-scope changes were stopped by the directory itself**, and the alert fired.
-- **The open gap is volume.** When the agent was asked to unlock 51 accounts or add 200 users, it was allowed to, and
-  the detections flagged it but didn't stop it. The next version adds a per-session limit.
-- **Every finding is validated, mitigated and re-tested**, including 8 setup weaknesses found and fixed before the
-  test campaign started.
+The design does not rely on the model refusing bad requests, because the model is the component an attacker is trying
+to deceive. Three controls contain the agent regardless of the model's behaviour:
+
+- **Permissions.** The agent's account is delegated rights on two areas of the directory only, enforced by Active
+  Directory.
+- **Human approval.** The one irreversible action requires confirmation from a person.
+- **Independent detection.** The domain controller audits every change and alerts on suspicious patterns from its own
+  logs, not the agent's.
 
 ---
 
-## What it demonstrates
+## Results
+
+- **Prompt injection was ineffective.** Three injection attempts, including an encoded "make admin" command, were
+  treated as data. No action was taken.
+- **Out-of-scope changes were denied by the directory**, and the corresponding detection fired.
+- **One gap remains open: volume.** Requests to unlock 51 accounts and to add 200 users fell within the agent's rights
+  and executed. Detection flagged both but did not block them. Version 2 adds a per-session change limit.
+- **Eight configuration weaknesses** were identified, remediated and re-tested before the campaign began.
+
+---
+
+## Skills demonstrated
 
 - **AI agent security:** prompt-injection and tool-misuse testing mapped to the OWASP Top 10 for LLM Applications, the
   OWASP Top 10 for Agentic Applications and MITRE ATLAS
-- **Identity security:** least-privilege delegation in Active Directory, audit policy, and detection rules proven with
-  staged events
-- **Detection engineering:** five detection rules on the domain controller, each tested before it was trusted
-- **Secure design:** the agent never handles passwords, has no shell, and its text never reaches a command line
-- **Documented engineering:** a written design, a phased plan, and a findings log for every test
+- **Identity security:** least-privilege delegation in Active Directory, advanced audit policy, detection rules
+  validated with staged events
+- **Detection engineering:** five detection rules on the domain controller, each verified before use
+- **Secure design:** no password handling, no shell access, and agent text never reaches a command line
+- **Documentation:** design document, phased plan and a findings log covering every test
 
-**Stack:** Windows Server 2025, Active Directory, PowerShell, Python, the Model Context Protocol (MCP), Claude Code,
+**Stack:** Windows Server 2025, Active Directory, PowerShell, Python, Model Context Protocol (MCP), Claude Code,
 Hyper-V.
 
 ---
 
-## How it fits
+## Related work
 
-This builds on my [Active Directory home lab](https://github.com/kenmwara/active-directory-lab): a domain controller
-and a domain-joined Windows 11 client on Hyper-V, with 999 users and five Group Policies. The lab is the environment;
-this project is the security test of an AI agent working inside it.
+The environment is the [Active Directory lab](https://github.com/kenmwara/active-directory-lab): a domain controller
+and a domain-joined Windows 11 client on Hyper-V, with 999 users and five Group Policies.

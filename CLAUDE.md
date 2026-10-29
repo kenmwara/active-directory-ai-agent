@@ -47,7 +47,7 @@ PhasedSolutionPlan.md is the living plan.** Read both before any task.
 - A tool that runs arbitrary PowerShell or commands.
 - **Policy inside the server in v1** (D9): no caps, no allowlists beyond input validation. v2 adds them on purpose.
 - Secrets in code, config, logs or commits. Lab passwords are never written down.
-- Anything about the Cyber Range or Josh's MCP server. AD lab only.
+- Anything outside the AD lab (shared training tenants, third-party environments).
 
 ## Commands
 
@@ -62,7 +62,7 @@ code reaches CLIENT01 with `Copy-VMFile` (D15); run them there.
 
 ## Workflow
 
-- Josh Madakor's process: start prompt → planning prompt → approve → build → closing prompt (PhasedSolutionPlan.md).
+- Spec-driven process: start prompt → planning prompt → approve → build → closing prompt (PhasedSolutionPlan.md).
 - **Commit after every task.** Messages say what changed and why.
 - Run `tests\check_server.py` before every commit. A tool isn't done until it has a happy-path and a denial-path
   run on CLIENT01, both visible in DC01's Security log.
