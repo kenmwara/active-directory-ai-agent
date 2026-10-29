@@ -2,15 +2,15 @@
 
 # Securing an AI Agent in Active Directory
 
-**Security assessment of an AI helpdesk agent operating with delegated rights in a live Active Directory domain:
-which control contains the agent when it is manipulated.**
+**Can an AI helper safely manage user accounts if someone tries to trick it? This project gave one the job, then tried
+to make it misbehave.**
 
-An AI agent was deployed behind a purpose-built tool layer (an MCP server) and granted least-privilege rights in an
-Active Directory domain. A 13-test adversarial campaign then targeted it with indirect prompt injection, privilege
-escalation, excessive-agency requests and control bypass. Each test recorded which control contained the agent:
-Active Directory delegation, a human approval gate, or detection on the domain controller. Injection attempts did not
-change the agent's behaviour, privileged requests were refused or denied by the directory, and every out-of-scope
-write was detected. One gap remains open: high-volume changes within the agent's rights are detected but not blocked.
+An AI helpdesk assistant was set up to do routine IT work in Active Directory, the system that controls a company's
+user accounts and logins: unlocking accounts and managing group membership. It was given only the access that job
+needs. Then it was tested 13 ways, the way an attacker would try: commands hidden in text it reads, requests for admin
+power, and attempts to make large or destructive changes. Hidden commands never fooled it, it refused to hand out admin
+power, and every change outside its area was blocked or caught. One gap is still open: it can make many allowed
+changes in a row, which are caught but not stopped. Version 2 adds a limit.
 
 ## Key takeaways
 
