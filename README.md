@@ -1,4 +1,4 @@
-<!-- banner --><a href="https://github.com/kenmwara"><img src="https://raw.githubusercontent.com/kenmwara/kenmwara/main/assets/brand/card-ai-agent.png?v=b19713ca" width="100%" alt="Securing an AI Agent in AD: An AI helpdesk agent with delegated rights in Active Directory, tested with prompt injection and misuse to find which control contains it."></a>
+<!-- banner --><a href="https://github.com/kenmwara"><img src="https://raw.githubusercontent.com/kenmwara/kenmwara/main/assets/brand/card-ai-agent.png?v=b19713ca74" width="100%" alt="Securing an AI Agent in AD: An AI helpdesk agent with delegated rights in Active Directory, tested with prompt injection and misuse to find which control contains it."></a>
 
 # Securing an AI Agent in Active Directory
 
